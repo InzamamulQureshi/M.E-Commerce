@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import "./globals.css";
 
@@ -41,15 +42,32 @@ export async function generateMetadata(): Promise<Metadata> {
     }
   } catch {}
 
+  let siteUrl = rawSiteUrl;
+  try {
+    const headerList = await headers();
+    const host = headerList.get("x-forwarded-host") || headerList.get("host");
+    const proto = headerList.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    if (host) {
+      siteUrl = `${proto}://${host}`;
+    }
+  } catch {}
+
   const metaTitle = ogTitle || `${storeName} | Minimalist, Modular E-Commerce`;
   const metaDescription = ogDescription || tagline || "Minimalist, modular open-source e-commerce platform.";
 
-  const images = ogImageUrl
-    ? [{ url: ogImageUrl, width: 1200, height: 630, alt: metaTitle }]
-    : [{ url: "/opengraph-image", width: 1200, height: 630, alt: metaTitle }];
+  const ogImageFullUrl = ogImageUrl || `${siteUrl}/api/branding/og-image`;
+
+  const images = [
+    {
+      url: ogImageFullUrl,
+      width: 1200,
+      height: 630,
+      alt: metaTitle,
+    },
+  ];
 
   return {
-    metadataBase: new URL(rawSiteUrl),
+    metadataBase: new URL(siteUrl),
     title: {
       default: metaTitle,
       template: `%s | ${storeName}`,
@@ -65,7 +83,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: metaTitle,
       description: metaDescription,
-      url: "/",
+      url: siteUrl,
       siteName: storeName,
       type: "website",
       images,
@@ -74,7 +92,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: metaTitle,
       description: metaDescription,
-      images: ogImageUrl ? [ogImageUrl] : ["/twitter-image"],
+      images: [ogImageFullUrl],
     },
     robots: {
       index: true,

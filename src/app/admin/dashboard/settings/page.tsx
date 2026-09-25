@@ -266,7 +266,7 @@ export default function AdminSettingsHubPage() {
         onSubmit={handleSaveBranding}
         className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-5 sm:p-6 shadow-xs space-y-6"
       >
-        <div className="flex items-center justify-between pb-4 border-b border-[#E5DFD4] dark:border-[#2A231F]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E5DFD4] dark:border-[#2A231F]">
           <div className="flex items-center gap-2.5">
             <Store className="w-5 h-5 text-[#A64732] dark:text-[#E07A5F]" />
             <div>
@@ -282,7 +282,7 @@ export default function AdminSettingsHubPage() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
           >
             {saving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             <span>{saving ? "Saving..." : "Save Identity"}</span>

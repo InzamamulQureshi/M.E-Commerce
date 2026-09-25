@@ -158,10 +158,10 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <Link href="/admin/dashboard/products/new">
+        <Link href="/admin/dashboard/products/new" className="w-full sm:w-auto">
           <button
             type="button"
-            className="px-5 py-2.5 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] dark:hover:bg-[#D46548] text-white dark:text-[#181513] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] dark:hover:bg-[#D46548] text-white dark:text-[#181513] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>+ Add New Gift</span>
@@ -505,32 +505,81 @@ export default function AdminProductsPage() {
                   </div>
 
                   {/* Actions & Stock adjuster */}
-                  <div className="flex items-center justify-between pt-2 border-t border-[#EFE9DF] dark:border-[#282320]">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-[#786F64] dark:text-[#A89F91]">Stock:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleStockUpdate(p.id, p.stock, -1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-xs font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="w-8 text-center text-xs font-mono font-bold">
-                        {p.stock}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleStockUpdate(p.id, p.stock, 1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-xs font-bold"
-                      >
-                        +
-                      </button>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-[#EFE9DF] dark:border-[#282320]">
+                    <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-[#786F64] dark:text-[#A89F91]">Stock:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleStockUpdate(p.id, p.stock, -1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-xs font-bold hover:bg-[#EAE3D8] dark:hover:bg-[#282320]"
+                        >
+                          -
+                        </button>
+                        <span className={`w-8 text-center text-xs font-mono font-bold ${
+                          p.stock <= 5 ? "text-red-600 dark:text-red-400" : ""
+                        }`}>
+                          {p.stock}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleStockUpdate(p.id, p.stock, 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-xs font-bold hover:bg-[#EAE3D8] dark:hover:bg-[#282320]"
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStockUpdate(p.id, p.stock, 5)}
+                          className="px-1.5 py-1 rounded-md text-[10px] border border-[#DDD5C7] dark:border-[#38322D] text-[#786F64] dark:text-[#A89F91] hover:bg-[#EAE3D8] dark:hover:bg-[#282320]"
+                          title="Add 5 units"
+                        >
+                          +5
+                        </button>
+                      </div>
+
+                      {/* Mobile Quick Bestseller & Featured toggles */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleToggle(p.id, "isBestSeller", p.isBestSeller)}
+                          className={`p-1.5 rounded-lg border text-xs transition-colors ${
+                            p.isBestSeller
+                              ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold"
+                              : "border-[#DDD5C7] dark:border-[#2E2925] text-[#A89F91]"
+                          }`}
+                          title={p.isBestSeller ? "Bestseller (active)" : "Set as Bestseller"}
+                        >
+                          <Star className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggle(p.id, "isFeatured", p.isFeatured)}
+                          className={`p-1.5 rounded-lg border text-xs transition-colors ${
+                            p.isFeatured
+                              ? "border-[#A64732] bg-rose-50 dark:bg-rose-950/40 text-[#A64732] dark:text-[#E07A5F] font-bold"
+                              : "border-[#DDD5C7] dark:border-[#2E2925] text-[#A89F91]"
+                          }`}
+                          title={p.isFeatured ? "Featured (active)" : "Set as Featured"}
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-[#F0EBE1] dark:border-[#241F1C]">
+                      <Link
+                        href={`/catalog/${p.slug}`}
+                        target="_blank"
+                        className="p-1.5 rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"
+                        title="View on storefront"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Link>
+
                       <Link
                         href={`/admin/dashboard/products/${p.id}`}
-                        className="px-3 py-1 text-xs font-semibold rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-[#181513] dark:text-[#FAF8F5]"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#DDD5C7] dark:border-[#38322D] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5]"
                       >
                         Edit
                       </Link>
@@ -538,9 +587,10 @@ export default function AdminProductsPage() {
                       <button
                         type="button"
                         onClick={() => setDeletingProduct(p)}
-                        className="p-1 rounded-lg text-red-600"
+                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-200"
+                        title="Delete product"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>

@@ -624,138 +624,142 @@ export default function AdminOrdersPage() {
 
                     {/* 5. Status & Quick Actions */}
                     <div className="col-span-2 flex flex-wrap items-center justify-between lg:justify-end gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#EAE3D8] dark:border-[#2E2925]">
-                      {/* Status Pill */}
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          order.status === "DELIVERED"
-                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
-                            : order.status === "SHIPPED"
-                            ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300"
-                            : order.status === "PACKED"
-                            ? "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300"
-                            : order.status === "HANDCRAFTING"
-                            ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
-                            : order.status === "CANCELLED"
-                            ? "bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 font-bold"
-                            : "bg-[#EFE9DF] dark:bg-[#25201A] text-[#181513] dark:text-[#FAF8F5]"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
+                      {/* Left: Status Pill & View Details Toggle */}
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                            order.status === "DELIVERED"
+                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
+                              : order.status === "SHIPPED"
+                              ? "bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300"
+                              : order.status === "PACKED"
+                              ? "bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300"
+                              : order.status === "HANDCRAFTING"
+                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300"
+                              : order.status === "CANCELLED"
+                              ? "bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 font-bold"
+                              : "bg-[#EFE9DF] dark:bg-[#25201A] text-[#181513] dark:text-[#FAF8F5]"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
 
-                      {/* Dropdown View Button (Prominently Toggles All Card Details) */}
-                      <button
-                        type="button"
-                        onClick={() => toggleExpand(order.id)}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all flex items-center gap-1 cursor-pointer ${
-                          isExpanded
-                            ? "bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] border-[#181513] dark:border-[#FAF8F5] shadow-xs"
-                            : "border-[#DDD5C7] dark:border-[#38322D] bg-[#FAF7F2] dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5]"
-                        }`}
-                        title={isExpanded ? "Hide full order card" : "View full order card"}
-                      >
-                        <span>{isExpanded ? "Hide Details" : "View Details"}</span>
-                        {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(order.id)}
+                          className={`px-2 py-1 text-[11px] font-bold rounded-lg border transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                            isExpanded
+                              ? "bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] border-[#181513] dark:border-[#FAF8F5] shadow-xs"
+                              : "border-[#DDD5C7] dark:border-[#38322D] bg-[#FAF7F2] dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5]"
+                          }`}
+                          title={isExpanded ? "Hide full order card" : "View full order card"}
+                        >
+                          <span>{isExpanded ? "Hide" : "Details"}</span>
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Right: Workflow Action, Reject, Delete */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Fast Workflow Advance Button */}
+                        {order.status === "PENDING" && order.paymentStatus !== "CONFIRMED" && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handlePaymentVerify(order.id)}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Verify & Confirm Payment"
+                          >
+                            Verify
+                          </button>
                         )}
-                      </button>
+                        {order.status === "CONFIRMED" && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleStatusChange(order.id, "HANDCRAFTING")}
+                            className="px-2.5 py-1 rounded-lg bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] text-white dark:text-[#181513] text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Start Handcrafting"
+                          >
+                            Craft
+                          </button>
+                        )}
+                        {order.status === "HANDCRAFTING" && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleStatusChange(order.id, "PACKED")}
+                            className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Mark as Packed"
+                          >
+                            Pack
+                          </button>
+                        )}
+                        {order.status === "PACKED" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTrackingModalOrder(order);
+                              setCourierNameInput(order.courierName || "Delhivery");
+                              setTrackingNumberInput(order.trackingNumber || "");
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Dispatch Courier"
+                          >
+                            Ship
+                          </button>
+                        )}
+                        {order.status === "SHIPPED" && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleStatusChange(order.id, "DELIVERED")}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Mark as Delivered"
+                          >
+                            Delivered
+                          </button>
+                        )}
 
-                      {/* Fast Workflow Advance Button */}
-                      {order.status === "PENDING" && order.paymentStatus !== "CONFIRMED" && (
-                        <button
-                          type="button"
-                          disabled={isUpdating}
-                          onClick={() => handlePaymentVerify(order.id)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title="Verify & Confirm Payment"
-                        >
-                          Verify
-                        </button>
-                      )}
-                      {order.status === "CONFIRMED" && (
-                        <button
-                          type="button"
-                          disabled={isUpdating}
-                          onClick={() => handleStatusChange(order.id, "HANDCRAFTING")}
-                          className="px-2.5 py-1 rounded-lg bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] text-white dark:text-[#181513] text-[11px] font-bold transition-colors cursor-pointer"
-                          title="Start Handcrafting"
-                        >
-                          Craft
-                        </button>
-                      )}
-                      {order.status === "HANDCRAFTING" && (
-                        <button
-                          type="button"
-                          disabled={isUpdating}
-                          onClick={() => handleStatusChange(order.id, "PACKED")}
-                          className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title="Mark as Packed"
-                        >
-                          Pack
-                        </button>
-                      )}
-                      {order.status === "PACKED" && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTrackingModalOrder(order);
-                            setCourierNameInput(order.courierName || "Delhivery");
-                            setTrackingNumberInput(order.trackingNumber || "");
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title="Dispatch Courier"
-                        >
-                          Ship
-                        </button>
-                      )}
-                      {order.status === "SHIPPED" && (
-                        <button
-                          type="button"
-                          disabled={isUpdating}
-                          onClick={() => handleStatusChange(order.id, "DELIVERED")}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title="Mark as Delivered"
-                        >
-                          Delivered
-                        </button>
-                      )}
+                        {/* Reject Fake Payment / Cancel Order Button */}
+                        {order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => {
+                              setRejectModalOrder(order);
+                              setRejectReason("Fake or Unverified UPI UTR");
+                              setCustomRejectReason("");
+                            }}
+                            className="px-2 py-1 rounded-lg border border-red-200 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                            title="Reject order due to fake payment or invalid details"
+                          >
+                            <Ban className="w-3 h-3" />
+                            <span>Reject</span>
+                          </button>
+                        )}
 
-                      {/* Reject Fake Payment / Cancel Order Button */}
-                      {order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
+                        {/* Delete Order Action */}
                         <button
                           type="button"
                           disabled={isUpdating}
-                          onClick={() => {
-                            setRejectModalOrder(order);
-                            setRejectReason("Fake or Unverified UPI UTR");
-                            setCustomRejectReason("");
-                          }}
-                          className="px-2 py-1 rounded-lg border border-red-200 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
-                          title="Reject order due to fake payment or invalid details"
+                          onClick={() => setDeleteModalOrder(order)}
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-stone-100 dark:hover:bg-stone-800/80 transition-colors cursor-pointer"
+                          title="Permanently Delete Order"
                         >
-                          <Ban className="w-3 h-3" />
-                          <span>Reject</span>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                      )}
-
-                      {/* Delete Order Action */}
-                      <button
-                        type="button"
-                        disabled={isUpdating}
-                        onClick={() => setDeleteModalOrder(order)}
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-stone-100 dark:hover:bg-stone-800/80 transition-colors cursor-pointer"
-                        title="Permanently Delete Order"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Complete Dropdown Card (Full Order Dossier, Creations, Calligraphy, Shipping & Controls) */}
                   {isExpanded && (
-                    <div className="p-4 sm:p-6 bg-[#FAF7F2] dark:bg-[#151210] border-t border-[#EAE3D8] dark:border-[#2E2925] space-y-5">
+                    <div className="p-3.5 sm:p-6 bg-[#FAF7F2] dark:bg-[#151210] border-t border-[#EAE3D8] dark:border-[#2E2925] space-y-5">
                       {/* Top Bar: Order ID, Date, Quick Status Pills, Dossier & Slip Launchers */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E5DFD4] dark:border-[#282320]">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -800,28 +804,30 @@ export default function AdminOrdersPage() {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setDossierOrder(order)}
-                            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-white dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-                            title="Inspect complete order dossier"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F]" />
-                            <span>Full Dossier</span>
-                          </button>
+                        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EAE3D8] dark:border-[#282320]">
+                          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                            <button
+                              type="button"
+                              onClick={() => setDossierOrder(order)}
+                              className="flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-white dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                              title="Inspect complete order dossier"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F]" />
+                              <span>Full Dossier</span>
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => setPackingSlipOrder(order)}
-                            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-white dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-                            title="Print Packing Slip"
-                          >
-                            <Printer className="w-3.5 h-3.5 text-[#786F64] dark:text-[#DCD5CB]" />
-                            <span>Packing Slip</span>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => setPackingSlipOrder(order)}
+                              className="flex-1 sm:flex-initial px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-white dark:bg-[#201D1A] text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                              title="Print Packing Slip"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-[#786F64] dark:text-[#DCD5CB]" />
+                              <span>Packing Slip</span>
+                            </button>
+                          </div>
 
-                          <span className="text-base font-bold text-[#181513] dark:text-[#FAF8F5] ml-1 font-mono">
+                          <span className="text-base font-bold text-[#181513] dark:text-[#FAF8F5] ml-1 font-mono shrink-0">
                             {formatCurrency(order.finalTotal)}
                           </span>
                         </div>
@@ -1087,16 +1093,16 @@ export default function AdminOrdersPage() {
                       </div>
 
                       {/* Bottom Workflow Action Bar & Manual Override Selector */}
-                      <div className="pt-3 border-t border-[#E5DFD4] dark:border-[#282320] flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#1A1715] p-3.5 sm:p-4 rounded-xl border border-[#E5DFD4] dark:border-[#2E2925]">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#786F64] dark:text-[#A89F91]">
+                      <div className="pt-3 border-t border-[#E5DFD4] dark:border-[#282320] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#1A1715] p-3 sm:p-4 rounded-xl border border-[#E5DFD4] dark:border-[#2E2925]">
+                        <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                          <span className="text-xs text-[#786F64] dark:text-[#A89F91] whitespace-nowrap">
                             Workflow Stage:
                           </span>
                           <select
                             value={order.status}
                             onChange={(e) => handleStatusChange(order.id, e.target.value)}
                             disabled={isUpdating}
-                            className="px-2.5 py-1.5 rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-[#FAF7F2] dark:bg-[#201D1A] text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] focus:outline-none cursor-pointer"
+                            className="flex-1 sm:flex-initial px-2.5 py-1.5 rounded-lg border border-[#DDD5C7] dark:border-[#38322D] bg-[#FAF7F2] dark:bg-[#201D1A] text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] focus:outline-none cursor-pointer"
                           >
                             <option value="PENDING">PENDING</option>
                             <option value="CONFIRMED">CONFIRMED</option>
@@ -1108,17 +1114,17 @@ export default function AdminOrdersPage() {
                           </select>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                           {/* Fast Workflow Step Progression Button */}
                           {order.status === "PENDING" && order.paymentStatus !== "CONFIRMED" && (
                             <button
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handlePaymentVerify(order.id)}
-                              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Verify & Confirm Payment</span>
+                              <span>Verify & Confirm</span>
                             </button>
                           )}
                           {order.status === "CONFIRMED" && (
@@ -1126,7 +1132,7 @@ export default function AdminOrdersPage() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(order.id, "HANDCRAFTING")}
-                              className="px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] text-white dark:text-[#181513] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] text-white dark:text-[#181513] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <Scissors className="w-3.5 h-3.5" />
                               <span>Start Handcrafting</span>
@@ -1137,10 +1143,10 @@ export default function AdminOrdersPage() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(order.id, "PACKED")}
-                              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <Package className="w-3.5 h-3.5" />
-                              <span>Mark as Packed & Ready</span>
+                              <span>Mark Packed</span>
                             </button>
                           )}
                           {order.status === "PACKED" && (
@@ -1151,10 +1157,10 @@ export default function AdminOrdersPage() {
                                 setCourierNameInput(order.courierName || "Delhivery");
                                 setTrackingNumberInput(order.trackingNumber || "");
                               }}
-                              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <Truck className="w-3.5 h-3.5" />
-                              <span>Dispatch Courier & Add Tracking</span>
+                              <span>Dispatch Courier</span>
                             </button>
                           )}
                           {order.status === "SHIPPED" && (
@@ -1162,7 +1168,7 @@ export default function AdminOrdersPage() {
                               type="button"
                               disabled={isUpdating}
                               onClick={() => handleStatusChange(order.id, "DELIVERED")}
-                              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               <span>Mark Delivered</span>
@@ -1185,11 +1191,11 @@ export default function AdminOrdersPage() {
                                 setRejectReason("Fake or Unverified UPI UTR");
                                 setCustomRejectReason("");
                               }}
-                              className="px-3.5 py-2 rounded-xl border border-red-300 dark:border-red-900/70 bg-red-50/50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              className="px-3.5 py-2 rounded-xl border border-red-300 dark:border-red-900/70 bg-red-50/50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                               title="Reject fake payment and cancel order"
                             >
                               <Ban className="w-3.5 h-3.5" />
-                              <span>Reject Order</span>
+                              <span>Reject</span>
                             </button>
                           )}
 
@@ -1198,18 +1204,17 @@ export default function AdminOrdersPage() {
                             type="button"
                             disabled={isUpdating}
                             onClick={() => setDeleteModalOrder(order)}
-                            className="px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-red-300 dark:hover:border-red-900/60 text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/30 dark:hover:bg-red-950/20 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                            className="p-2 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-red-300 dark:hover:border-red-900/60 text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/30 dark:hover:bg-red-950/20 text-xs font-semibold transition-colors flex items-center justify-center cursor-pointer"
                             title="Permanently delete order from database"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            <span>Delete</span>
                           </button>
 
                           {/* Quick Collapse Button */}
                           <button
                             type="button"
                             onClick={() => toggleExpand(order.id)}
-                            className="px-3.5 py-2 rounded-xl border border-[#DDD5C7] dark:border-[#38322D] hover:bg-stone-200 dark:hover:bg-stone-800 text-xs font-semibold text-[#575048] dark:text-[#DCD5CB] transition-colors flex items-center gap-1 cursor-pointer"
+                            className="px-3 py-2 rounded-xl border border-[#DDD5C7] dark:border-[#38322D] hover:bg-stone-200 dark:hover:bg-stone-800 text-xs font-semibold text-[#575048] dark:text-[#DCD5CB] transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             title="Collapse details for this order"
                           >
                             <ChevronUp className="w-3.5 h-3.5" />
@@ -1408,9 +1413,9 @@ export default function AdminOrdersPage() {
                       key={item.id}
                       className="p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-[#141210] border border-[#EAE3D8] dark:border-[#282320] text-xs space-y-2"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                         <span className="font-bold text-sm text-[#181513] dark:text-[#FAF8F5]">{item.productTitle}</span>
-                        <span className="font-mono font-bold text-[#181513] dark:text-[#FAF8F5]">
+                        <span className="font-mono font-bold text-xs sm:text-sm text-[#A64732] dark:text-[#E07A5F] shrink-0">
                           {formatCurrency(item.price)} × {item.quantity}
                         </span>
                       </div>
@@ -1436,7 +1441,7 @@ export default function AdminOrdersPage() {
 
               {/* Financial Summary */}
               <div className="pt-4 border-t border-[#EAE3D8] dark:border-[#2E2925] flex justify-end">
-                <div className="w-64 space-y-1 text-xs">
+                <div className="w-full sm:w-64 space-y-1 text-xs">
                   <div className="flex justify-between text-[#575048] dark:text-[#DCD5CB]">
                     <span>Subtotal:</span>
                     <span>{formatCurrency(dossierOrder.subtotal)}</span>
@@ -1460,22 +1465,22 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Sticky Footer (Guaranteed Visible on All Phone Displays) */}
-            <div className="shrink-0 p-3.5 sm:p-4 border-t border-[#EAE3D8] dark:border-[#2E2925] bg-[#FAF8F5] dark:bg-[#141210] flex flex-wrap items-center justify-between gap-2.5">
+            <div className="shrink-0 p-3 sm:p-4 border-t border-[#EAE3D8] dark:border-[#2E2925] bg-[#FAF8F5] dark:bg-[#141210] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <button
                 type="button"
                 onClick={() => setDossierOrder(null)}
-                className="px-4 py-2.5 rounded-xl border border-[#DDD5C7] dark:border-[#38322D] hover:bg-stone-200 dark:hover:bg-stone-800 text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#DDD5C7] dark:border-[#38322D] hover:bg-stone-200 dark:hover:bg-stone-800 text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] transition-colors cursor-pointer text-center order-2 sm:order-1"
               >
                 Close Dossier
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto order-1 sm:order-2">
                 {dossierOrder.customerPhone && (
                   <a
                     href={generateWhatsAppUrl(dossierOrder)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>WhatsApp</span>
@@ -1492,7 +1497,7 @@ export default function AdminOrdersPage() {
                       setCustomRejectReason("");
                       setDossierOrder(null);
                     }}
-                    className="px-3.5 py-2 rounded-xl border border-red-300 dark:border-red-900/70 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-bold transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl border border-red-300 dark:border-red-900/70 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     title="Reject order and mark payment as fake/unverified"
                   >
                     <Ban className="w-3.5 h-3.5" />
@@ -1507,7 +1512,7 @@ export default function AdminOrdersPage() {
                     setDeleteModalOrder(dossierOrder);
                     setDossierOrder(null);
                   }}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/30 dark:hover:bg-red-950/20 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/30 dark:hover:bg-red-950/20 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   title="Permanently delete order"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -1520,7 +1525,7 @@ export default function AdminOrdersPage() {
                     setPackingSlipOrder(dossierOrder);
                     setDossierOrder(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] dark:hover:bg-[#D46548] text-white dark:text-[#181513] text-xs font-bold transition-colors shadow-xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-[#A64732] hover:bg-[#8D3825] dark:bg-[#E07A5F] dark:hover:bg-[#D46548] text-white dark:text-[#181513] text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Packing Slip</span>

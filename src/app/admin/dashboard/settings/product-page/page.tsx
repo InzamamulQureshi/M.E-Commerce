@@ -308,7 +308,7 @@ export default function ProductPageSettingsPage() {
 
         {/* Section 2: Trust Highlights Banner */}
         <div className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD4] dark:border-[#2A231F]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5DFD4] dark:border-[#2A231F]">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#A64732] dark:text-[#E07A5F]" />
               <div>
@@ -320,12 +320,12 @@ export default function ProductPageSettingsPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E5DFD4] dark:border-[#2A231F]">
               <button
                 type="button"
                 onClick={handleAddHighlight}
                 disabled={highlights.length >= 4}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] hover:border-[#A64732] dark:hover:border-[#E07A5F] disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] hover:border-[#A64732] dark:hover:border-[#E07A5F] disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                 title={highlights.length >= 4 ? "Maximum 4 highlights allowed" : "Add new highlight"}
               >
                 <Plus className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F]" />

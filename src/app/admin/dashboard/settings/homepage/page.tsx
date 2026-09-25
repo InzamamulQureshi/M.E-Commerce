@@ -467,35 +467,47 @@ export default function HomepageSettingsPage() {
                 key={pillar.id}
                 className="p-3.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white/70 dark:bg-[#1A1614] space-y-2.5 relative group"
               >
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                      <span className="text-[11px] font-bold text-[#A64732] dark:text-[#E07A5F] shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={pillar.badge}
+                        onChange={(e) => handlePrincipleChange(pillar.id, "badge", e.target.value)}
+                        placeholder="e.g. 01 / CRAFT PURITY"
+                        className="w-full sm:w-44 px-2 py-1 rounded-md border border-[#E5DFD4] dark:border-[#2A231F] text-[11px] font-bold text-[#181513] dark:text-[#FAF8F5] bg-white dark:bg-[#1C1815]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePrinciple(pillar.id)}
+                      className="sm:hidden p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                      title="Remove Pillar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <div className="flex items-center gap-2 flex-1">
-                    <span className="text-[11px] font-bold text-[#A64732] dark:text-[#E07A5F]">
-                      #{idx + 1}
-                    </span>
-                    <input
-                      type="text"
-                      value={pillar.badge}
-                      onChange={(e) => handlePrincipleChange(pillar.id, "badge", e.target.value)}
-                      placeholder="e.g. 01 / CRAFT PURITY"
-                      className="px-2 py-1 rounded-md border border-[#E5DFD4] dark:border-[#2A231F] text-[11px] font-bold text-[#181513] dark:text-[#FAF8F5] bg-transparent w-44"
-                    />
                     <input
                       type="text"
                       value={pillar.title}
                       onChange={(e) => handlePrincipleChange(pillar.id, "title", e.target.value)}
                       placeholder="Pillar Title (e.g. 100% Handcrafted)"
-                      className="px-2 py-1 rounded-md border border-[#E5DFD4] dark:border-[#2A231F] text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] bg-transparent flex-1"
+                      className="w-full px-2 py-1 rounded-md border border-[#E5DFD4] dark:border-[#2A231F] text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] bg-white dark:bg-[#1C1815]"
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePrinciple(pillar.id)}
+                      className="hidden sm:block p-1 rounded text-[#786F64] hover:text-red-600 dark:hover:text-red-400 transition-colors shrink-0"
+                      title="Remove Pillar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemovePrinciple(pillar.id)}
-                    className="p-1 rounded text-[#786F64] hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                    title="Remove Pillar"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
                 </div>
 
                 <textarea

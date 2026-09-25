@@ -383,7 +383,7 @@ export default function AdminCategoriesPage() {
                 key={cat.id}
                 className="p-5 sm:p-6 rounded-xl bg-white dark:bg-[#181412] border border-[#D0C5B4] dark:border-[#2E2723] shadow-2xs space-y-4"
               >
-                <div className="flex items-start justify-between pb-3 border-b border-[#EAE3D8] dark:border-[#2E2925] gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-3 border-b border-[#EAE3D8] dark:border-[#2E2925] gap-3">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#FAF7F2] dark:bg-[#201B18] border border-[#E8E1D5] dark:border-[#2E2723] shrink-0 flex items-center justify-center">
                       {cat.image ? (
@@ -418,11 +418,11 @@ export default function AdminCategoriesPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#F0EAE1] dark:border-[#26211D]">
                     <button
                       type="button"
                       onClick={() => handleToggleHeroFeatured(cat.id)}
-                      className={`px-2 py-1 text-[10px] font-semibold rounded-lg border transition-colors flex items-center gap-1 cursor-pointer ${
+                      className={`px-2.5 py-1.5 sm:py-1 text-[11px] sm:text-[10px] font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1 cursor-pointer flex-1 sm:flex-initial ${
                         cat.id === heroFeaturedCategoryId
                           ? "border-[#A64732] text-[#A64732] bg-[#A64732]/10 dark:text-[#E07A5F] dark:border-[#E07A5F]"
                           : "border-[#DDD5C7] dark:border-[#38322D] text-[#786F64] dark:text-[#A89F91] hover:border-[#181513] dark:hover:border-[#FAF8F5] hover:text-[#181513] dark:hover:text-[#FAF8F5]"
@@ -431,28 +431,30 @@ export default function AdminCategoriesPage() {
                     >
                       <span>{cat.id === heroFeaturedCategoryId ? "★ Hero Active" : "☆ Set Hero"}</span>
                     </button>
-                    <button
-                      onClick={() =>
-                        setEditingTarget({
-                          id: cat.id,
-                          type: "category",
-                          name: cat.name,
-                          description: cat.description || "",
-                          image: cat.image || "",
-                        })
-                      }
-                      className="p-1.5 text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5] transition-colors rounded-lg hover:bg-[#F2EDE4] dark:hover:bg-[#25211E]"
-                      title="Edit category"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(cat.id, "category", cat.name)}
-                      className="p-1.5 text-[#786F64] dark:text-[#A89F91] hover:text-[#A64732] dark:hover:text-[#E07A5F] transition-colors rounded-lg hover:bg-[#F2EDE4] dark:hover:bg-[#25211E]"
-                      title="Delete category"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() =>
+                          setEditingTarget({
+                            id: cat.id,
+                            type: "category",
+                            name: cat.name,
+                            description: cat.description || "",
+                            image: cat.image || "",
+                          })
+                        }
+                        className="p-1.5 text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5] transition-colors rounded-lg hover:bg-[#F2EDE4] dark:hover:bg-[#25211E] cursor-pointer"
+                        title="Edit category"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(cat.id, "category", cat.name)}
+                        className="p-1.5 text-[#786F64] dark:text-[#A89F91] hover:text-[#A64732] dark:hover:text-[#E07A5F] transition-colors rounded-lg hover:bg-[#F2EDE4] dark:hover:bg-[#25211E] cursor-pointer"
+                        title="Delete category"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -469,10 +471,10 @@ export default function AdminCategoriesPage() {
                       {cat.subcategories.map((sub: any) => (
                         <div
                           key={sub.id}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#F2EDE4] dark:bg-[#25211E] text-xs text-[#181513] dark:text-[#FAF8F5] border border-[#DDD5C7] dark:border-[#38322D]"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-[#F2EDE4] dark:bg-[#25211E] text-xs text-[#181513] dark:text-[#FAF8F5] border border-[#DDD5C7] dark:border-[#38322D] gap-2"
                         >
-                          <span className="font-medium">• {sub.name}</span>
-                          <div className="flex items-center gap-1">
+                          <span className="font-medium truncate">• {sub.name}</span>
+                          <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() =>
                                 setEditingTarget({
@@ -623,7 +625,7 @@ export default function AdminCategoriesPage() {
                   type="button"
                   variant="outline"
                   onClick={() => { setEditingTarget(null); setEditError(""); }}
-                  className="rounded-xl px-4 py-2 text-xs cursor-pointer"
+                  className="flex-1 sm:flex-initial rounded-xl px-4 py-2.5 sm:py-2 text-xs cursor-pointer"
                 >
                   Cancel
                 </Button>
@@ -631,7 +633,7 @@ export default function AdminCategoriesPage() {
                   type="submit"
                   disabled={editLoading}
                   variant="default"
-                  className="rounded-xl px-5 py-2 text-xs cursor-pointer"
+                  className="flex-1 sm:flex-initial rounded-xl px-5 py-2.5 sm:py-2 text-xs cursor-pointer"
                 >
                   {editLoading ? "Saving..." : "Save Changes"}
                 </Button>
