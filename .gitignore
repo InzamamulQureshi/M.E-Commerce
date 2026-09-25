@@ -1,0 +1,51 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js Build Output
+/.next/
+/out/
+/build
+
+# Environment Variables (CRITICAL: Do NOT commit secrets to GitHub)
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# TypeScript Build Cache
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# Local Development & Scratch Testing
+/scratch
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Root-level test screenshots (anchored to root only, preserves images in /public)
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+
+# Operating System & Editor Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

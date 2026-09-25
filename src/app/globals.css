@@ -1,0 +1,519 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  html[data-theme="warm-terracotta"] {
+    --background: 38 25% 97%;      /* #FAF8F5 warm museum bone */
+    --foreground: 24 15% 11%;      /* #181513 deep architectural charcoal */
+    --card: 38 22% 96%;            /* #F7F4EE */
+    --card-foreground: 24 15% 11%;
+    --popover: 38 25% 98%;
+    --popover-foreground: 24 15% 11%;
+    --primary: 24 15% 11%;         /* #181513 high-fashion charcoal */
+    --primary-foreground: 38 25% 97%;
+    --secondary: 36 18% 91%;       /* #ECE6DC neutral linen */
+    --secondary-foreground: 24 15% 16%;
+    --muted: 36 15% 90%;
+    --muted-foreground: 24 8% 44%;
+    --accent: 14 55% 42%;          /* #A64732 refined terracotta sealing wax */
+    --accent-foreground: 38 25% 97%;
+    --destructive: 0 68% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 16% 87%;          /* #E5DFD4 hairline border */
+    --input: 36 16% 87%;
+    --ring: 14 55% 42%;
+    --radius: 0.75rem;
+    --font-serif: var(--font-ubuntu), 'Ubuntu', sans-serif;
+    --font-sans: var(--font-ubuntu), 'Ubuntu', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: var(--font-ubuntu), 'Ubuntu', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dark,
+  html[data-theme="warm-terracotta"].dark {
+    --background: 24 10% 7%;       /* #12100E luxury obsidian */
+    --foreground: 38 25% 97%;      /* #FAF8F5 bone text */
+    --card: 24 10% 10%;            /* #1A1715 */
+    --card-foreground: 38 25% 97%;
+    --popover: 24 10% 10%;
+    --popover-foreground: 38 25% 97%;
+    --primary: 38 25% 97%;
+    --primary-foreground: 24 15% 11%;
+    --secondary: 24 8% 16%;        /* #262220 */
+    --secondary-foreground: 38 25% 97%;
+    --muted: 24 8% 18%;
+    --muted-foreground: 38 10% 65%;
+    --accent: 14 62% 49%;          /* #C85A42 luminous terracotta */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 24 8% 18%;           /* #2E2925 dark hairline border */
+    --input: 24 8% 18%;
+    --ring: 14 62% 49%;
+  }
+
+  /* 2. Botanical Sage (Forest Flora & Pressed Parchment) */
+  html[data-theme="botanical-sage"] {
+    --background: 110 20% 97%;     /* #F5F8F5 */
+    --foreground: 135 25% 11%;     /* #131914 */
+    --card: 110 18% 95%;           /* #EEF3EE */
+    --card-foreground: 135 25% 11%;
+    --popover: 110 20% 98%;
+    --popover-foreground: 135 25% 11%;
+    --primary: 135 25% 13%;
+    --primary-foreground: 110 20% 97%;
+    --secondary: 115 15% 90%;
+    --secondary-foreground: 135 25% 15%;
+    --muted: 115 12% 89%;
+    --muted-foreground: 135 10% 42%;
+    --accent: 135 28% 33%;         /* #3D6643 Forest Sage */
+    --accent-foreground: 110 20% 98%;
+    --border: 120 12% 86%;
+    --input: 120 12% 86%;
+    --ring: 135 28% 33%;
+  }
+
+  html[data-theme="botanical-sage"].dark {
+    --background: 135 20% 6%;      /* #0D130E */
+    --foreground: 110 20% 96%;     /* #F4F7F4 */
+    --card: 135 18% 9%;            /* #141C15 */
+    --card-foreground: 110 20% 96%;
+    --popover: 135 18% 9%;
+    --popover-foreground: 110 20% 96%;
+    --primary: 110 20% 96%;
+    --primary-foreground: 135 20% 8%;
+    --secondary: 135 12% 15%;
+    --secondary-foreground: 110 20% 96%;
+    --muted: 135 12% 16%;
+    --muted-foreground: 110 10% 62%;
+    --accent: 135 32% 48%;         /* #53A15D Luminous Sage */
+    --accent-foreground: 0 0% 100%;
+    --border: 135 10% 17%;
+    --input: 135 10% 17%;
+    --ring: 135 32% 48%;
+  }
+
+  /* 3. Royal Antique Gold (Heritage Luxury & Champagne) */
+  html[data-theme="royal-gold"] {
+    --background: 40 30% 97%;      /* #FAF8F3 */
+    --foreground: 30 20% 11%;      /* #1A1612 */
+    --card: 40 25% 95%;            /* #F6F3EB */
+    --card-foreground: 30 20% 11%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 30 20% 11%;
+    --primary: 30 20% 12%;
+    --primary-foreground: 40 30% 97%;
+    --secondary: 40 18% 91%;
+    --secondary-foreground: 30 20% 16%;
+    --muted: 40 15% 90%;
+    --muted-foreground: 30 10% 43%;
+    --accent: 38 60% 42%;          /* #AB802B Antique Gold */
+    --accent-foreground: 40 30% 98%;
+    --border: 38 18% 86%;
+    --input: 38 18% 86%;
+    --ring: 38 60% 42%;
+  }
+
+  html[data-theme="royal-gold"].dark {
+    --background: 30 15% 7%;       /* #14110E */
+    --foreground: 40 25% 96%;      /* #F9F6F0 */
+    --card: 30 15% 10%;            /* #1C1814 */
+    --card-foreground: 40 25% 96%;
+    --popover: 30 15% 10%;
+    --popover-foreground: 40 25% 96%;
+    --primary: 40 25% 96%;
+    --primary-foreground: 30 15% 8%;
+    --secondary: 30 10% 16%;
+    --secondary-foreground: 40 25% 96%;
+    --muted: 30 10% 17%;
+    --muted-foreground: 40 10% 63%;
+    --accent: 40 70% 54%;          /* #E5B242 Luminous Gold */
+    --accent-foreground: 24 15% 11%;
+    --border: 35 12% 18%;
+    --input: 35 12% 18%;
+    --ring: 40 70% 54%;
+  }
+
+  /* 4. Noir Minimalist Monochrome (Architectural Minimalist) */
+  html[data-theme="noir-monochrome"] {
+    --background: 0 0% 98%;        /* #FAFAFA */
+    --foreground: 0 0% 9%;         /* #171717 */
+    --card: 0 0% 96%;              /* #F5F5F5 */
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 99%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 18%;            /* #2E2E2E Jet Slate */
+    --accent-foreground: 0 0% 98%;
+    --border: 0 0% 87%;
+    --input: 0 0% 87%;
+    --ring: 0 0% 18%;
+  }
+
+  html[data-theme="noir-monochrome"].dark {
+    --background: 0 0% 6%;         /* #0F0F0F */
+    --foreground: 0 0% 98%;        /* #FAFAFA */
+    --card: 0 0% 9%;               /* #171717 */
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 92%;            /* #EBEBEB Platinum Accent */
+    --accent-foreground: 0 0% 9%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 92%;
+  }
+
+  /* 5. Rose Blush (Romantic Keepsake & Soft Petal) */
+  html[data-theme="rose-blush"] {
+    --background: 350 25% 98%;     /* #FAF5F6 */
+    --foreground: 345 20% 12%;     /* #1C1315 */
+    --card: 350 22% 96%;           /* #F7EFF0 */
+    --card-foreground: 345 20% 12%;
+    --popover: 350 25% 99%;
+    --popover-foreground: 345 20% 12%;
+    --primary: 345 20% 14%;
+    --primary-foreground: 350 25% 98%;
+    --secondary: 350 16% 91%;
+    --secondary-foreground: 345 20% 16%;
+    --muted: 350 14% 90%;
+    --muted-foreground: 345 10% 43%;
+    --accent: 350 48% 48%;         /* #B54259 Dusty Keepsake Rose */
+    --accent-foreground: 350 25% 98%;
+    --border: 350 16% 88%;
+    --input: 350 16% 88%;
+    --ring: 350 48% 48%;
+  }
+
+  html[data-theme="rose-blush"].dark {
+    --background: 345 15% 7%;      /* #140E10 */
+    --foreground: 350 20% 96%;     /* #FAF5F6 */
+    --card: 345 15% 10%;           /* #1C1417 */
+    --card-foreground: 350 20% 96%;
+    --popover: 345 15% 10%;
+    --popover-foreground: 350 20% 96%;
+    --primary: 350 20% 96%;
+    --primary-foreground: 345 15% 8%;
+    --secondary: 345 10% 16%;
+    --secondary-foreground: 350 20% 96%;
+    --muted: 345 10% 17%;
+    --muted-foreground: 350 10% 64%;
+    --accent: 350 58% 60%;         /* #DB5C75 Luminous Blossom */
+    --accent-foreground: 0 0% 100%;
+    --border: 345 10% 18%;
+    --input: 345 10% 18%;
+    --ring: 350 58% 60%;
+  }
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #181513;
+  color: #FAF8F5;
+}
+
+.font-serif,
+.font-mono {
+  font-family: 'Ubuntu', sans-serif;
+}
+
+/* Textarea Infinite-Drag Prevention */
+textarea {
+  resize: vertical;
+  max-height: 220px;
+}
+
+textarea.resize-none,
+.resize-none {
+  resize: none !important;
+}
+
+/* Hairline borders */
+.hairline-b {
+  border-bottom: 1px solid rgba(24, 21, 19, 0.1);
+}
+.dark .hairline-b {
+  border-bottom: 1px solid rgba(250, 248, 245, 0.1);
+}
+
+.hairline-t {
+  border-top: 1px solid rgba(24, 21, 19, 0.1);
+}
+.dark .hairline-t {
+  border-top: 1px solid rgba(250, 248, 245, 0.1);
+}
+
+.hairline-all {
+  border: 1px solid rgba(24, 21, 19, 0.1);
+}
+.dark .hairline-all {
+  border: 1px solid rgba(250, 248, 245, 0.1);
+}
+
+/* Understated boutique scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #12100E;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8CEBE;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #38322D;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B5A895;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #504842;
+}
+
+/* Subtle image zoom on hover */
+.gallery-zoom {
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .gallery-zoom {
+  transform: scale(1.04);
+}
+
+/* Dark Mode Comprehensive Token Mappings */
+.dark .bg-\[\#FAF8F5\] {
+  background-color: #1A1715 !important;
+}
+
+.dark .bg-\[\#F7F4EE\],
+.dark .bg-\[\#F7F3EB\],
+.dark .bg-\[\#F4EFE6\],
+.dark .bg-\[\#F2EDE4\],
+.dark .bg-\[\#F0EBE2\] {
+  background-color: #24201D !important;
+}
+
+.dark .bg-\[\#EFEAE1\],
+.dark .bg-\[\#EAE3D8\],
+.dark .bg-\[\#EAE0D2\],
+.dark .bg-\[\#EAE0D0\] {
+  background-color: #2D2723 !important;
+}
+
+.dark .bg-white {
+  background-color: #1E1A18 !important;
+}
+
+.dark .text-\[\#181513\],
+.dark .text-\[\#272220\],
+.dark .text-\[\#3A3530\] {
+  color: #FAF8F5 !important;
+}
+
+.dark .text-\[\#575048\],
+.dark .text-\[\#524B43\],
+.dark .text-\[\#6E665D\],
+.dark .text-\[\#665E54\],
+.dark .text-\[\#786F64\],
+.dark .text-\[\#736B62\] {
+  color: #BDB4A8 !important;
+}
+
+.dark .text-\[\#9A9185\],
+.dark .text-\[\#9B9287\] {
+  color: #8E8478 !important;
+}
+
+.dark .border-\[\#E5DFD4\],
+.dark .border-\[\#E7E0D5\],
+.dark .border-\[\#EAE3D8\],
+.dark .border-\[\#DDD5C7\],
+.dark .border-\[\#EFE9DF\],
+.dark .border-\[\#E8DDD0\],
+.dark .border-\[\#E6DDD0\],
+.dark .border-\[\#DACFBE\],
+.dark .border-\[\#DDD0BF\],
+.dark .border-\[\#E3D9C9\] {
+  border-color: #2E2925 !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1E1A18 !important;
+  color: #FAF8F5 !important;
+  border-color: #38322D !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #FAF8F5 !important;
+}
+
+.dark .shadow-xs,
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* =========================================================
+   5-THEME ENGINE DYNAMIC OVERRIDES (LIGHT & DARK MODES)
+   Ensures theme accents and surfaces cascade across all components
+   ========================================================= */
+
+/* 1. Botanical Sage Overrides */
+html[data-theme="botanical-sage"] .text-\[\#A64732\],
+html[data-theme="botanical-sage"] .hover\:text-\[\#A64732\]:hover {
+  color: #3D6643 !important;
+}
+html[data-theme="botanical-sage"].dark .dark\:text-\[\#E07A5F\],
+html[data-theme="botanical-sage"].dark .dark\:hover\:text-\[\#E07A5F\]:hover,
+html[data-theme="botanical-sage"].dark .text-\[\#A64732\] {
+  color: #53A15D !important;
+}
+html[data-theme="botanical-sage"] .bg-\[\#A64732\],
+html[data-theme="botanical-sage"] .hover\:bg-\[\#A64732\]:hover {
+  background-color: #3D6643 !important;
+}
+html[data-theme="botanical-sage"].dark .dark\:bg-\[\#E07A5F\],
+html[data-theme="botanical-sage"].dark .dark\:hover\:bg-\[\#E07A5F\]:hover,
+html[data-theme="botanical-sage"].dark .bg-\[\#A64732\] {
+  background-color: #53A15D !important;
+}
+html[data-theme="botanical-sage"] .border-\[\#A64732\] {
+  border-color: #3D6643 !important;
+}
+html[data-theme="botanical-sage"].dark .border-\[\#A64732\],
+html[data-theme="botanical-sage"].dark .dark\:border-\[\#E07A5F\] {
+  border-color: #53A15D !important;
+}
+
+/* 2. Royal Antique Gold Overrides */
+html[data-theme="royal-gold"] .text-\[\#A64732\],
+html[data-theme="royal-gold"] .hover\:text-\[\#A64732\]:hover {
+  color: #AB802B !important;
+}
+html[data-theme="royal-gold"].dark .dark\:text-\[\#E07A5F\],
+html[data-theme="royal-gold"].dark .dark\:hover\:text-\[\#E07A5F\]:hover,
+html[data-theme="royal-gold"].dark .text-\[\#A64732\] {
+  color: #E5B242 !important;
+}
+html[data-theme="royal-gold"] .bg-\[\#A64732\],
+html[data-theme="royal-gold"] .hover\:bg-\[\#A64732\]:hover {
+  background-color: #AB802B !important;
+}
+html[data-theme="royal-gold"].dark .dark\:bg-\[\#E07A5F\],
+html[data-theme="royal-gold"].dark .dark\:hover\:bg-\[\#E07A5F\]:hover,
+html[data-theme="royal-gold"].dark .bg-\[\#A64732\] {
+  background-color: #E5B242 !important;
+}
+html[data-theme="royal-gold"] .border-\[\#A64732\] {
+  border-color: #AB802B !important;
+}
+html[data-theme="royal-gold"].dark .border-\[\#A64732\],
+html[data-theme="royal-gold"].dark .dark\:border-\[\#E07A5F\] {
+  border-color: #E5B242 !important;
+}
+
+/* 3. Noir Monochrome Overrides */
+html[data-theme="noir-monochrome"] .text-\[\#A64732\],
+html[data-theme="noir-monochrome"] .hover\:text-\[\#A64732\]:hover {
+  color: #2E2E2E !important;
+}
+html[data-theme="noir-monochrome"].dark .dark\:text-\[\#E07A5F\],
+html[data-theme="noir-monochrome"].dark .dark\:hover\:text-\[\#E07A5F\]:hover,
+html[data-theme="noir-monochrome"].dark .text-\[\#A64732\] {
+  color: #EBEBEB !important;
+}
+html[data-theme="noir-monochrome"] .bg-\[\#A64732\],
+html[data-theme="noir-monochrome"] .hover\:bg-\[\#A64732\]:hover {
+  background-color: #2E2E2E !important;
+}
+html[data-theme="noir-monochrome"].dark .dark\:bg-\[\#E07A5F\],
+html[data-theme="noir-monochrome"].dark .dark\:hover\:bg-\[\#E07A5F\]:hover,
+html[data-theme="noir-monochrome"].dark .bg-\[\#A64732\] {
+  background-color: #EBEBEB !important;
+}
+html[data-theme="noir-monochrome"] .border-\[\#A64732\] {
+  border-color: #2E2E2E !important;
+}
+html[data-theme="noir-monochrome"].dark .border-\[\#A64732\],
+html[data-theme="noir-monochrome"].dark .dark\:border-\[\#E07A5F\] {
+  border-color: #EBEBEB !important;
+}
+
+/* 4. Rose Blush Overrides */
+html[data-theme="rose-blush"] .text-\[\#A64732\],
+html[data-theme="rose-blush"] .hover\:text-\[\#A64732\]:hover {
+  color: #B54259 !important;
+}
+html[data-theme="rose-blush"].dark .dark\:text-\[\#E07A5F\],
+html[data-theme="rose-blush"].dark .dark\:hover\:text-\[\#E07A5F\]:hover,
+html[data-theme="rose-blush"].dark .text-\[\#A64732\] {
+  color: #DB5C75 !important;
+}
+html[data-theme="rose-blush"] .bg-\[\#A64732\],
+html[data-theme="rose-blush"] .hover\:bg-\[\#A64732\]:hover {
+  background-color: #B54259 !important;
+}
+html[data-theme="rose-blush"].dark .dark\:bg-\[\#E07A5F\],
+html[data-theme="rose-blush"].dark .dark\:hover\:bg-\[\#E07A5F\]:hover,
+html[data-theme="rose-blush"].dark .bg-\[\#A64732\] {
+  background-color: #DB5C75 !important;
+}
+html[data-theme="rose-blush"] .border-\[\#A64732\] {
+  border-color: #B54259 !important;
+}
+html[data-theme="rose-blush"].dark .border-\[\#A64732\],
+html[data-theme="rose-blush"].dark .dark\:border-\[\#E07A5F\] {
+  border-color: #DB5C75 !important;
+}
+
+/* Printable Packing Slip & Invoice Rules */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  aside, nav, header, button, .no-print {
+    display: none !important;
+  }
+  .printable-slip {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .printable-slip * {
+    color: black !important;
+  }
+}
+

@@ -1,0 +1,346 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  HANDCRAFTING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  ONLINE_CARD
+  UPI_QR
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(CUSTOMER)
+  status        CustomerStatus @default(ACTIVE)
+  statusReason  String?        @db.Text
+  statusUpdatedAt DateTime?
+  phone         String?
+  address       String?   @db.Text
+  city          String?
+  state         String?
+  postalCode    String?
+  emailVerified         Boolean   @default(false)
+  verificationCode      String?
+  verificationExpiresAt DateTime?
+  birthDate             DateTime?
+  anniversaryDate       DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  orders                Order[]
+  reviews               Review[]
+  addresses             Address[]
+
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Category {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  description   String?        @db.Text
+  image         String?
+  orderIndex    Int            @default(0)
+  subcategories    Subcategory[]
+  products         Product[]
+  productCategories ProductCategory[]
+  createdAt        DateTime       @default(now())
+
+  @@index([orderIndex])
+}
+
+model Subcategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products    Product[]
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([categoryId, orderIndex])
+}
+
+model Product {
+  id               String       @id @default(cuid())
+  title            String
+  slug             String       @unique
+  tagline          String?
+  description      String       @db.Text
+  price            Decimal      @db.Decimal(10, 2)
+  compareAtPrice   Decimal?     @db.Decimal(10, 2)
+  stock            Int          @default(10)
+  images           String       @db.Text // JSON array of image URLs
+  categoryId       String
+  category         Category     @relation(fields: [categoryId], references: [id])
+  subcategoryId    String?
+  subcategory      Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  materials        String?      // e.g. "300GSM Imported Kraft cardstock, Silk ribbon, Wax seal"
+  dimensions       String?      // e.g. "15cm x 15cm x 15cm"
+  craftDays        Int          @default(2) // Estimated handcraft lead time
+  isFeatured       Boolean      @default(false)
+  isBestSeller     Boolean      @default(false)
+  allowsCustomNote Boolean           @default(true)
+  allowsWaxSeal    Boolean           @default(true)
+  allowsGiftWrap   Boolean           @default(true)
+  categories       ProductCategory[]
+  orderItems       OrderItem[]
+  reviews          Review[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([isFeatured, isBestSeller, createdAt])
+  @@index([price])
+}
+
+model ProductCategory {
+  id         String   @id @default(cuid())
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, categoryId])
+  @@index([productId])
+  @@index([categoryId])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress String        @db.Text
+  city            String
+  state           String
+  postalCode      String
+  subtotal        Decimal       @db.Decimal(10, 2)
+  discountTotal   Decimal       @default(0) @db.Decimal(10, 2)
+  shippingFee     Decimal       @default(0) @db.Decimal(10, 2)
+  finalTotal      Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+  paymentMethod   PaymentMethod @default(UPI_QR)
+  paymentStatus   String        @default("PENDING")
+  paymentRef      String?
+  courierName     String?
+  trackingNumber  String?
+  orderNotes      String?       @db.Text
+  couponCode      String?
+  items           OrderItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([paymentStatus])
+  @@index([couponCode])
+  @@index([customerEmail])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId           String?
+  product             Product? @relation(fields: [productId], references: [id])
+  productTitle        String
+  price               Decimal  @db.Decimal(10, 2)
+  quantity            Int
+  selectedImage       String?
+  customRecipientName String?
+  customMessage       String?  @db.Text
+  waxSealColor        String?
+  giftWrapOption      String?
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Coupon {
+  id                String    @id @default(cuid())
+  code              String    @unique
+  discountPercent   Int?
+  discountAmount    Decimal?  @db.Decimal(10, 2)
+  minOrderAmount    Decimal?  @db.Decimal(10, 2)
+  maxDiscountAmount Decimal?  @db.Decimal(10, 2)
+  targetAudience    String    @default("ALL") // "ALL" | "NEW_CUSTOMERS" | "REPEAT_CUSTOMERS" | "SPECIFIC_USER"
+  targetUserId      String?
+  targetUserEmail   String?
+  minOrderCount     Int?      @default(0)
+  usageLimit        Int?
+  usedCount         Int       @default(0)
+  isActive          Boolean   @default(true)
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([targetUserId])
+  @@index([targetUserEmail])
+  @@index([isActive, expiresAt])
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag         String   @default("Home") // "Home" | "Work" | "Other"
+  name        String
+  phone       String
+  street      String   @db.Text
+  city        String
+  state       String
+  postalCode  String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, isDefault])
+}
+
+model Review {
+  id             String    @id @default(cuid())
+  productId      String
+  product        Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  authorName     String
+  rating         Int       @default(5)
+  comment        String    @db.Text
+  adminReply     String?   @db.Text
+  adminRepliedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([productId, createdAt])
+  @@index([userId])
+}
+
+model StudioSetting {
+  id                        String   @id @default("default")
+  storeName                 String   @default("The Fourfold")
+  tagline                   String   @default("Handcrafted with Love, Folded to Cherish")
+  storeLocation             String   @default("Studio • Mumbai")
+  instagram                 String   @default("https://instagram.com/thefourfold.official")
+  whatsapp                  String   @default("+919876543210")
+  upiId                     String   @default("thefourfold@oksbi")
+  upiName                   String   @default("The Fourfold Craft Studio")
+  studioAddress             String   @default("Bandra West, Mumbai 400050, Maharashtra, India")
+
+  // Modular Branding & Logo (Strictly bounded for headers)
+  logoUrl                   String?  @db.Text
+  logoWidth                 Int      @default(130)
+
+  // Exclusive Theme Presets (Light & Dark supported)
+  activeTheme               String   @default("warm-terracotta")
+
+  // Modular Currency
+  currencyCode              String   @default("INR")
+  currencySymbol            String   @default("₹")
+
+  // Modular Payment Acceptance (with COD safe fallback)
+  enableUpi                 Boolean  @default(true)
+  enableCod                 Boolean  @default(true)
+  codInstructions           String?  @db.Text
+
+  // Modular Homepage Hero Section
+  heroTitle                 String?  @db.Text
+  heroSubtitle              String?  @db.Text
+  heroImage                 String?  @db.Text
+  heroFeaturedCategoryId    String?
+  heroFeaturedCategoryLabel String?
+
+  // Modular Our Story (About Page)
+  aboutTitle                String?  @db.Text
+  aboutSlogan               String?  @db.Text
+  aboutDescription          String?  @db.Text
+  aboutImage                String?  @db.Text
+  aboutStoryBadge           String?  @default("The Atelier")
+  aboutStoryHeading         String?  @default("Behind The Fourfold")
+
+  // Modular Footer
+  footerAbout               String?  @db.Text
+  footerDispatchNote        String?  @default("Pan-India Insured Dispatch")
+  footerCopyrightText       String?  @default("Handcrafted with care in Mumbai.")
+  footerSecurityBadges      String?  @default("Secure UPI & Cards • Insured Transit")
+
+  // Modular Header & Search
+  searchPopularTags         String?  @default("Explosion Boxes, Pop-up Cards, Linen Scrapbooks, Crochet Tulips")
+
+  // Modular Categories Mega-Menu Spotlight Cards (JSON array or object)
+  curatedSpotlightsConfig   String?  @db.Text
+
+  // Modular Craft Principles (Homepage & Our Story)
+  craftPrinciples           String?  @db.Text
+  principlesBadge           String?  @default("Craft Principles")
+  principlesHeading         String?  @default("What Makes Every Gift Special")
+  principlesSubheading      String?  @default("Fourfold Standards")
+
+  // Modular Instagram Section (Homepage)
+  instagramBadge            String?  @default("Bandra West • Mumbai")
+  instagramHeading          String?  @default("Watch Creations Unfold Daily")
+  instagramDescription      String?  @db.Text
+  instagramButtonText       String?  @default("@thefourfold.official")
+
+  // Modular Announcement Bar (Storewide Header)
+  enableAnnouncement        Boolean  @default(true)
+  announcementText          String?  @default("Complimentary signature wax-sealed keepsake card with all orders")
+  announcementLink          String?  @default("/catalog")
+
+  // Modular Commerce & Shipping
+  freeShippingThreshold     Int      @default(999)
+  standardShippingFee       Int      @default(99)
+
+  // Modular Product Detail Page (PDP)
+  pdpShowHighlights         Boolean  @default(true)
+  pdpHighlight1Title        String?  @default("{craftDays} Days Handcraft")
+  pdpHighlight1Subtitle     String?  @default("Folded individually in our studio")
+  pdpHighlight2Title        String?  @default("Insured Dispatch")
+  pdpHighlight2Subtitle     String?  @default("Delivered safely with care")
+  pdpHighlightsConfig       String?  @db.Text
+  pdpShowRelated            Boolean  @default(true)
+  pdpRelatedBadge           String?  @default("Complementary Pieces")
+  pdpRelatedHeading         String?  @default("Complete Your Gifting Suite")
+  enableReviews             Boolean  @default(true)
+  enableWaxSealCustomization Boolean @default(true)
+  enableGiftWrapCustomization Boolean @default(true)
+
+  updatedAt                 DateTime @updatedAt
+}
+
