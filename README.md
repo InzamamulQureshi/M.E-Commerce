@@ -124,4 +124,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📄 License
 
-Private & Proprietary — All rights reserved by The Fourfold Studio.
+
