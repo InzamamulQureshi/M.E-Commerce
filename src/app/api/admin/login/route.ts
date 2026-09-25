@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { comparePassword, signToken, COOKIE_NAME } from "@/lib/auth";
 
-const MASTER_ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || "thefourfold_artisan_admin_secret_2026";
+const MASTER_ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || "mecommerce_admin_secret_2026";
 
 export async function POST(request: Request) {
   try {
@@ -19,8 +19,8 @@ export async function POST(request: Request) {
         // Create default studio admin if not found
         adminUser = await db.user.create({
           data: {
-            name: "The Fourfold Studio Team",
-            email: "artisan@thefourfold.com",
+            name: "M.E-Commerce Admin",
+            email: "admin@mecommerce.dev",
             passwordHash: "master_passcode_authenticated",
             role: "ADMIN",
           },

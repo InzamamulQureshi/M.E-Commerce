@@ -4,7 +4,7 @@ const client_1 = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const prisma = new client_1.PrismaClient();
 async function main() {
-    console.log("🌱 Starting The Fourfold database seed...");
+    console.log("🌱 Starting M.E-Commerce database seed...");
     // 1. Clean existing records in correct relation order
     await prisma.review.deleteMany();
     await prisma.orderItem.deleteMany();
@@ -15,12 +15,12 @@ async function main() {
     await prisma.category.deleteMany();
     await prisma.user.deleteMany();
     // 2. Create Admin and Demo Customer
-    const adminPasswordHash = await bcrypt.hash("thefourfold_admin_2026", 10);
+    const adminPasswordHash = await bcrypt.hash("mecommerce_admin_2026", 10);
     const customerPasswordHash = await bcrypt.hash("customer123", 10);
     const admin = await prisma.user.create({
         data: {
-            name: "The Fourfold Studio Team",
-            email: "artisan@thefourfold.com",
+            name: "M.E-Commerce Admin",
+            email: "admin@mecommerce.dev",
             passwordHash: adminPasswordHash,
             role: client_1.Role.ADMIN,
             phone: "+91 98765 43210",
@@ -127,7 +127,7 @@ async function main() {
                     {
                         name: "Quadruple-Fold Memory Folios",
                         slug: "memory-folios",
-                        description: "The signature Fourfold multi-directional expanding keepsake folios.",
+                        description: "Signature multi-directional expanding keepsake folios.",
                         orderIndex: 2,
                     },
                     {
@@ -278,8 +278,8 @@ async function main() {
             allowsWaxSeal: true,
         },
         {
-            title: "The Fourfold Accordion Storybook Card",
-            slug: "fourfold-accordion-storybook-card",
+            title: "Accordion Storybook Card",
+            slug: "accordion-storybook-card",
             tagline: "Continuous 8-fold panoramic keepsake card",
             description: "Our signature piece! A panoramic accordion folded card that extends into a breathtaking 80cm visual timeline. Each fold is individually embellished with hand-cut paper lace, botanical pressings, and spaces for your cherished photographs and messages. Closes neatly into an archival linen portfolio envelope tied with hand-dyed silk ribbon.",
             price: 899.00,
@@ -369,7 +369,7 @@ async function main() {
             title: "Everlasting Hand-Crocheted Tulip Bouquet",
             slug: "everlasting-hand-crocheted-tulip-bouquet",
             tagline: "5 blooms of hand-crocheted pastel tulips that never fade",
-            description: "A bouquet as timeless as your affection. Inspired by The Fourfold's iconic tulip motif, each tulip is painstakingly hand-crocheted with ultra-soft 5-ply milk cotton yarn and mounted on flexible floral wire stems with delicate green foliage. Wrapped in Korean waterproof matte craft paper and tied with a satin bow. Includes a complimentary personalized mini note.",
+            description: "A bouquet as timeless as your affection. Each tulip is painstakingly hand-crocheted with ultra-soft 5-ply milk cotton yarn and mounted on flexible floral wire stems with delicate green foliage. Wrapped in Korean waterproof matte craft paper and tied with a satin bow. Includes a complimentary personalized mini note.",
             price: 1299.00,
             compareAtPrice: 1599.00,
             stock: 15,
@@ -439,7 +439,7 @@ async function main() {
     await prisma.coupon.createMany({
         data: [
             {
-                code: "FOURFOLD10",
+                code: "WELCOME10",
                 discountPercent: 10,
                 minOrderAmount: 500,
                 isActive: true,
@@ -503,7 +503,7 @@ async function main() {
         });
         console.log(`✅ Seeded demo order: ${demoOrder.orderNumber}`);
     }
-    console.log("🎉 The Fourfold database seeding completed successfully!");
+    console.log("🎉 M.E-Commerce database seeding completed successfully!");
 }
 main()
     .catch((e) => {

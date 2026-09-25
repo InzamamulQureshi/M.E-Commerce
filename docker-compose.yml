@@ -3,19 +3,19 @@ version: '3.8'
 services:
   mysql:
     image: mysql:8.0
-    container_name: thefourfold_mysql
+    container_name: mecommerce_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: fourfold_root
-      MYSQL_DATABASE: thefourfold
-      MYSQL_USER: fourfold_user
-      MYSQL_PASSWORD: fourfold_password
+      MYSQL_ROOT_PASSWORD: mecommerce_root
+      MYSQL_DATABASE: mecommerce
+      MYSQL_USER: mecommerce_user
+      MYSQL_PASSWORD: mecommerce_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pfourfold_root"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmecommerce_root"]
       interval: 5s
       timeout: 5s
       retries: 10

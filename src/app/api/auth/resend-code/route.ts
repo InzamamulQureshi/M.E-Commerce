@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`[THE FOURFOLD AUTH] 💌 New verification code for ${cleanEmail}: ${verificationCode}`);
+    console.log(`[M.E-COMMERCE AUTH] 💌 New verification code for ${cleanEmail}: ${verificationCode}`);
 
     return NextResponse.json({
       success: true,

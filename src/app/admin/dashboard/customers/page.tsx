@@ -524,7 +524,7 @@ export default function AdminCustomersPage() {
                           {c.phone && (
                             <a
                               href={`https://wa.me/${c.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                                `Hello ${c.name || "valued customer"}, this is The Fourfold Studio!`
+                                `Hello ${c.name || "valued customer"}, this is M.E-Commerce!`
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -732,7 +732,7 @@ export default function AdminCustomersPage() {
                       {c.phone && (
                         <a
                           href={`https://wa.me/${c.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                            `Hello ${c.name || "valued customer"}, this is The Fourfold Studio!`
+                            `Hello ${c.name || "valued customer"}, this is M.E-Commerce!`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -893,7 +893,7 @@ export default function AdminCustomersPage() {
                     <span>Permanent Ban Notice</span>
                   </p>
                   <p>
-                    Banning this customer prevents them from logging in, accessing past orders, and completing checkout at The Fourfold studio.
+                    Banning this customer prevents them from logging in, accessing past orders, and completing checkout at the store.
                   </p>
                 </div>
               ) : moderationAction === "SUSPEND" ? (
@@ -1281,7 +1281,7 @@ export default function AdminCustomersPage() {
                 {selectedCustomer.phone && (
                   <a
                     href={`https://wa.me/${selectedCustomer.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                      `Hello ${selectedCustomer.name || "valued customer"}, this is The Fourfold Studio!`
+                      `Hello ${selectedCustomer.name || "valued customer"}, this is M.E-Commerce!`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

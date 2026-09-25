@@ -26,6 +26,15 @@ import {
 
 const SETTINGS_SECTIONS = [
   {
+    title: "SEO, Social OG & SVG Favicon",
+    description: "Manage OpenGraph social share cards, Twitter metadata, custom SVG favicon, and brand accent colors.",
+    href: "/admin/dashboard/settings/branding",
+    icon: Sparkles,
+    badge: "Brand Assets",
+    color: "from-fuchsia-500/10 to-pink-500/10 border-fuchsia-200 dark:border-fuchsia-900/40",
+    iconColor: "text-fuchsia-600 dark:text-fuchsia-400",
+  },
+  {
     title: "Color Themes & Palette",
     description: "Switch your store's atmosphere between Warm Terracotta, Botanical Sage, Royal Antique Gold, and more.",
     href: "/admin/dashboard/settings/themes",
@@ -91,9 +100,9 @@ const SETTINGS_SECTIONS = [
 ];
 
 export default function AdminSettingsHubPage() {
-  const [storeName, setStoreName] = useState("The Fourfold");
+  const [storeName, setStoreName] = useState("M.E-Commerce");
   const [tagline, setTagline] = useState("");
-  const [storeLocation, setStoreLocation] = useState("Studio • Mumbai");
+  const [storeLocation, setStoreLocation] = useState("Studio • Modern Atelier");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoWidth, setLogoWidth] = useState(130);
   const [logoPreviewError, setLogoPreviewError] = useState(false);
@@ -109,9 +118,9 @@ export default function AdminSettingsHubPage() {
       .then((data) => {
         if (data?.settings) {
           const s = data.settings;
-          setStoreName(s.storeName || "The Fourfold");
+          setStoreName(s.storeName || "M.E-Commerce");
           setTagline(s.tagline || "");
-          setStoreLocation(s.storeLocation || "Studio • Mumbai");
+          setStoreLocation(s.storeLocation || "Studio • Modern Atelier");
           setLogoUrl(s.logoUrl || "");
           setLogoWidth(s.logoWidth || 130);
         }
@@ -290,7 +299,7 @@ export default function AdminSettingsHubPage() {
               type="text"
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              placeholder="e.g. The Fourfold"
+              placeholder="e.g. M.E-Commerce"
               required
               className="w-full px-3.5 py-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
             />
@@ -307,7 +316,7 @@ export default function AdminSettingsHubPage() {
               type="text"
               value={storeLocation}
               onChange={(e) => setStoreLocation(e.target.value)}
-              placeholder="e.g. Studio • Mumbai"
+              placeholder="e.g. Studio • Modern Atelier"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
             />
             <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">

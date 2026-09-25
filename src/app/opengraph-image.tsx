@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
+import { db } from "@/lib/db";
 
-export const alt = "The Fourfold | Handcrafted Gifting Studio • Mumbai";
+export const alt = "M.E-Commerce | Minimalist, Modular E-Commerce Platform";
 export const dynamic = "force-dynamic";
 export const size = {
   width: 1200,
@@ -8,7 +9,29 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default function Image() {
+export default async function Image() {
+  let storeName = "M.E-Commerce";
+  let tagline = "Minimalist, Modular E-Commerce Platform";
+  let location = "Modern Atelier";
+  let accentColor = "#E07A5F";
+  let ogTitle = "";
+  let ogDescription = "";
+
+  try {
+    const s = await db.studioSetting.findUnique({ where: { id: "default" } });
+    if (s) {
+      if (s.storeName) storeName = s.storeName;
+      if (s.tagline) tagline = s.tagline;
+      if (s.storeLocation) location = s.storeLocation;
+      if (s.brandAccentColor) accentColor = s.brandAccentColor;
+      if (s.ogTitle) ogTitle = s.ogTitle;
+      if (s.ogDescription) ogDescription = s.ogDescription;
+    }
+  } catch {}
+
+  const displayTitle = ogTitle || storeName;
+  const displaySubtitle = ogDescription || tagline;
+
   return new ImageResponse(
     (
       <div
@@ -31,10 +54,10 @@ export default function Image() {
             position: "absolute",
             top: "-100px",
             right: "-100px",
-            width: "500px",
-            height: "500px",
+            width: "550px",
+            height: "550px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(166,71,50,0.25) 0%, rgba(24,21,19,0) 70%)",
+            background: "radial-gradient(circle, rgba(224,122,95,0.25) 0%, rgba(24,21,19,0) 70%)",
           }}
         />
 
@@ -48,10 +71,10 @@ export default function Image() {
         >
           <div
             style={{
-              width: "12px",
-              height: "12px",
+              width: "14px",
+              height: "14px",
               borderRadius: "50%",
-              backgroundColor: "#E07A5F",
+              backgroundColor: accentColor,
             }}
           />
           <span
@@ -59,11 +82,11 @@ export default function Image() {
               fontSize: "18px",
               textTransform: "uppercase",
               letterSpacing: "0.25em",
-              color: "#E07A5F",
+              color: accentColor,
               fontWeight: 700,
             }}
           >
-            Bandra West • Mumbai • India
+            {location}
           </span>
         </div>
 
@@ -77,32 +100,32 @@ export default function Image() {
         >
           <h1
             style={{
-              fontSize: "72px",
+              fontSize: "68px",
               fontWeight: 900,
               color: "#FAF8F5",
-              letterSpacing: "0.08em",
+              letterSpacing: "0.04em",
               textTransform: "uppercase",
               margin: 0,
               lineHeight: 1.1,
             }}
           >
-            The Fourfold
+            {displayTitle}
           </h1>
           <p
             style={{
-              fontSize: "32px",
+              fontSize: "30px",
               color: "#D1C9BE",
               fontWeight: 400,
               margin: 0,
-              maxWidth: "850px",
-              lineHeight: 1.3,
+              maxWidth: "880px",
+              lineHeight: 1.35,
             }}
           >
-            Cherished memories folded by hand. Personalized explosion boxes, keepsake albums & everlasting crochet flowers.
+            {displaySubtitle}
           </p>
         </div>
 
-        {/* Bottom studio details */}
+        {/* Bottom details */}
         <div
           style={{
             display: "flex",
@@ -115,32 +138,28 @@ export default function Image() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
             <span style={{ fontSize: "16px", color: "#A89F91", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Explosion Boxes
+              Modular Architecture
             </span>
             <span style={{ fontSize: "16px", color: "#665E54" }}>•</span>
             <span style={{ fontSize: "16px", color: "#A89F91", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Handmade Cards
+              Minimalist Storefront
             </span>
             <span style={{ fontSize: "16px", color: "#665E54" }}>•</span>
             <span style={{ fontSize: "16px", color: "#A89F91", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Keepsake Albums
-            </span>
-            <span style={{ fontSize: "16px", color: "#665E54" }}>•</span>
-            <span style={{ fontSize: "16px", color: "#A89F91", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Crochet Florals
+              Open Source
             </span>
           </div>
           <span
             style={{
               fontSize: "17px",
-              color: "#E07A5F",
+              color: accentColor,
               fontWeight: 700,
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               paddingLeft: "24px",
             }}
           >
-            thefourfold.com
+            {storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce"}.com
           </span>
         </div>
       </div>

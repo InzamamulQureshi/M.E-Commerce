@@ -18,18 +18,25 @@ export async function GET() {
 
     const payload = {
       settings: {
-        storeName: setting?.storeName || "The Fourfold",
-        tagline: setting?.tagline || "Handcrafted with Love, Folded to Cherish",
-        storeLocation: setting?.storeLocation || "Studio • Mumbai",
-        whatsapp: setting?.whatsapp || "+919876543210",
-        instagram: setting?.instagram || "https://instagram.com/thefourfold.official",
-        upiId: setting?.upiId || "thefourfold@oksbi",
-        upiName: setting?.upiName || "The Fourfold Craft Studio",
-        studioAddress: setting?.studioAddress || "Bandra West, Mumbai 400050, Maharashtra, India",
+        storeName: setting?.storeName || "M.E-Commerce",
+        tagline: setting?.tagline || "Minimalist, Modular E-Commerce Platform",
+        storeLocation: setting?.storeLocation || "Studio • Modern Atelier",
+        whatsapp: setting?.whatsapp || "+1234567890",
+        instagram: setting?.instagram || "https://instagram.com",
+        upiId: setting?.upiId || "merchant@upi",
+        upiName: setting?.upiName || "M.E-Commerce Store",
+        studioAddress: setting?.studioAddress || "Design District, Atelier Studio",
 
         // Modular Branding & Logo
         logoUrl: setting?.logoUrl || null,
         logoWidth: Math.min(160, Math.max(60, setting?.logoWidth || 130)),
+
+        // Modular Social, SEO & Favicon / Brand Assets
+        ogTitle: setting?.ogTitle || null,
+        ogDescription: setting?.ogDescription || null,
+        ogImageUrl: setting?.ogImageUrl || null,
+        faviconSvg: setting?.faviconSvg || null,
+        brandAccentColor: setting?.brandAccentColor || "#181513",
 
         // Exclusive Theme Preset
         activeTheme: setting?.activeTheme || "warm-terracotta",
@@ -56,12 +63,12 @@ export async function GET() {
         aboutDescription: setting?.aboutDescription || null,
         aboutImage: setting?.aboutImage || null,
         aboutStoryBadge: setting?.aboutStoryBadge || "The Atelier",
-        aboutStoryHeading: setting?.aboutStoryHeading || "Behind The Fourfold",
+        aboutStoryHeading: setting?.aboutStoryHeading || "Behind M.E-Commerce",
 
         // Modular Footer
         footerAbout: setting?.footerAbout || null,
-        footerDispatchNote: setting?.footerDispatchNote || "Pan-India Insured Dispatch",
-        footerCopyrightText: setting?.footerCopyrightText || "Handcrafted with care in Mumbai.",
+        footerDispatchNote: setting?.footerDispatchNote || "Insured Express Dispatch",
+        footerCopyrightText: setting?.footerCopyrightText || "Crafted with precision & care.",
         footerSecurityBadges: setting?.footerSecurityBadges || "Secure UPI & Cards • Insured Transit",
 
         // Modular Navigation & Search
@@ -72,13 +79,13 @@ export async function GET() {
         craftPrinciples: setting?.craftPrinciples || null,
         principlesBadge: setting?.principlesBadge || "Craft Principles",
         principlesHeading: setting?.principlesHeading || "What Makes Every Gift Special",
-        principlesSubheading: setting?.principlesSubheading || "Fourfold Standards",
+        principlesSubheading: setting?.principlesSubheading || "Core Quality Standards",
 
         // Modular Instagram Section (Homepage)
-        instagramBadge: setting?.instagramBadge || "Bandra West • Mumbai",
+        instagramBadge: setting?.instagramBadge || "Design Studio",
         instagramHeading: setting?.instagramHeading || "Watch Creations Unfold Daily",
-        instagramDescription: setting?.instagramDescription || "See folding demonstrations, custom calligraphy dedications, and unboxings on our official studio Instagram.",
-        instagramButtonText: setting?.instagramButtonText || "@thefourfold.official",
+        instagramDescription: setting?.instagramDescription || "See craft demonstrations, dedications, and unboxings on our official social channel.",
+        instagramButtonText: setting?.instagramButtonText || "@mecommerce",
 
         // Modular Announcement Bar (Storewide Header)
         enableAnnouncement: setting?.enableAnnouncement ?? true,
@@ -114,16 +121,21 @@ export async function GET() {
     console.error("Public settings error:", error);
     return NextResponse.json({
       settings: {
-        storeName: "The Fourfold",
-        tagline: "Handcrafted with Love, Folded to Cherish",
-        storeLocation: "Studio • Mumbai",
-        whatsapp: "+919876543210",
-        instagram: "https://instagram.com/thefourfold.official",
-        upiId: "thefourfold@oksbi",
-        upiName: "The Fourfold Craft Studio",
-        studioAddress: "Bandra West, Mumbai 400050, Maharashtra, India",
+        storeName: "M.E-Commerce",
+        tagline: "Minimalist, Modular E-Commerce Platform",
+        storeLocation: "Studio • Modern Atelier",
+        whatsapp: "+1234567890",
+        instagram: "https://instagram.com",
+        upiId: "merchant@upi",
+        upiName: "M.E-Commerce Store",
+        studioAddress: "Design District, Atelier Studio",
         logoUrl: null,
         logoWidth: 130,
+        ogTitle: null,
+        ogDescription: null,
+        ogImageUrl: null,
+        faviconSvg: null,
+        brandAccentColor: "#181513",
         activeTheme: "warm-terracotta",
         currencyCode: "INR",
         currencySymbol: "₹",
@@ -140,21 +152,21 @@ export async function GET() {
         aboutDescription: null,
         aboutImage: null,
         aboutStoryBadge: "The Atelier",
-        aboutStoryHeading: "Behind The Fourfold",
+        aboutStoryHeading: "Behind M.E-Commerce",
         footerAbout: null,
-        footerDispatchNote: "Pan-India Insured Dispatch",
-        footerCopyrightText: "Handcrafted with care in Mumbai.",
+        footerDispatchNote: "Insured Express Dispatch",
+        footerCopyrightText: "Crafted with precision & care.",
         footerSecurityBadges: "Secure UPI & Cards • Insured Transit",
         searchPopularTags: "Explosion Boxes, Pop-up Cards, Linen Scrapbooks, Crochet Tulips",
         curatedSpotlightsConfig: null,
         craftPrinciples: null,
         principlesBadge: "Craft Principles",
         principlesHeading: "What Makes Every Gift Special",
-        principlesSubheading: "Fourfold Standards",
-        instagramBadge: "Bandra West • Mumbai",
+        principlesSubheading: "Core Quality Standards",
+        instagramBadge: "Design Studio",
         instagramHeading: "Watch Creations Unfold Daily",
-        instagramDescription: "See folding demonstrations, custom calligraphy dedications, and unboxings on our official studio Instagram.",
-        instagramButtonText: "@thefourfold.official",
+        instagramDescription: "See craft demonstrations, dedications, and unboxings on our official social channel.",
+        instagramButtonText: "@mecommerce",
         enableAnnouncement: true,
         announcementText: "Complimentary signature wax-sealed keepsake card with all orders",
         announcementLink: "/catalog",

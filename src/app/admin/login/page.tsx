@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("artisan@thefourfold.com");
+  const [email, setEmail] = useState("admin@mecommerce.dev");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Access Denied. Invalid artisan credentials.");
+        setError(data.error || "Access Denied. Invalid admin credentials.");
       } else {
         router.push("/admin/dashboard");
       }
@@ -46,13 +46,13 @@ export default function AdminLoginPage() {
         {/* Header - Clean editorial styling without lock box */}
         <div className="text-center space-y-1.5">
           <span className="text-[10px] font-semibold text-[#A64732] dark:text-[#E07A5F] uppercase tracking-[0.24em] block">
-            The Fourfold • Studio Administration
+            M.E-Commerce • Administration
           </span>
           <h1 className="font-bold tracking-tight text-2xl sm:text-3xl text-[#181513] dark:text-[#FAF8F5]">
-            Artisan Portal
+            Admin Portal
           </h1>
           <p className="text-xs text-[#6E665D] dark:text-[#A89F91] max-w-xs mx-auto">
-            Sign in to manage catalog creations, customer orders, reviews, and studio fulfillment.
+            Sign in to manage catalog items, customer orders, reviews, and store fulfillment.
           </p>
         </div>
 
@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="artisan@thefourfold.com"
+              placeholder="admin@mecommerce.dev"
               className="w-full h-12 px-4 rounded-xl border border-[#DDD5C7] dark:border-[#38322D] bg-white dark:bg-[#12100E] text-sm text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
             />
           </div>

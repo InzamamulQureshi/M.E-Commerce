@@ -817,7 +817,7 @@ export default function AccountPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10.5px] uppercase tracking-[0.2em] text-[#A64732] dark:text-[#E07A5F] font-bold block">
-              Fourfold Studio
+              M.E-Commerce
             </span>
             <span className="text-stone-300 dark:text-stone-700">•</span>
             <span className="text-xs font-medium text-stone-500">Patron Portal</span>
@@ -944,7 +944,7 @@ export default function AccountPage() {
                     <div className="pt-1 pl-5.5">
                       <a
                         href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                          `Hello The Fourfold Studio! My order #${lookupResult.orderNumber} is marked as rejected (Reason: ${lookupReason || "Payment unverified"}). Here is my payment receipt/UTR screenshot.`
+                          `Hello M.E-Commerce! My order #${lookupResult.orderNumber} is marked as rejected (Reason: ${lookupReason || "Payment unverified"}). Here is my payment receipt/UTR screenshot.`
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -1625,7 +1625,7 @@ export default function AccountPage() {
                             <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs">
                               <a
                                 href={`https://wa.me/?text=${encodeURIComponent(
-                                  `Hello Fourfold Studio! I have a question regarding my ongoing order #${order.orderNumber}.`
+                                  `Hello M.E-Commerce Team! I have a question regarding my ongoing order #${order.orderNumber}.`
                                 )}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -1718,7 +1718,7 @@ export default function AccountPage() {
                                   <div className="pt-1">
                                     <a
                                       href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                                        `Hello The Fourfold Studio! My order #${order.orderNumber} was marked as rejected (Reason: ${rejReason || "Payment unverified"}). Here is my payment receipt/UTR screenshot.`
+                                        `Hello M.E-Commerce! My order #${order.orderNumber} was marked as rejected (Reason: ${rejReason || "Payment unverified"}). Here is my payment receipt/UTR screenshot.`
                                       )}`}
                                       target="_blank"
                                       rel="noopener noreferrer"

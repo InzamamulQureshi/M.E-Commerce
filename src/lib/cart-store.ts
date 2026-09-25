@@ -23,7 +23,7 @@ export interface AppliedCoupon {
   maxDiscountAmount?: number;
 }
 
-const STORAGE_KEY = "thefourfold_cart_v1";
+const STORAGE_KEY = "mecommerce_cart_v1";
 
 // Simple reactive store for Next.js client components
 type Listener = () => void;

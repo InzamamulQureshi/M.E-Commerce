@@ -92,7 +92,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#A64732] dark:bg-[#E07A5F]" />
                 <span className="text-xs font-medium tracking-wider uppercase text-[#786F64] dark:text-[#A89F91]">
-                  {studioSetting?.tagline?.trim() || `${studioSetting?.storeName || "The Fourfold"} • ${studioSetting?.storeLocation || "Mumbai, India"}`}
+                  {studioSetting?.tagline?.trim() || `${studioSetting?.storeName || "M.E-Commerce"} • ${studioSetting?.storeLocation || "Mumbai, India"}`}
                 </span>
               </div>
 
@@ -140,7 +140,7 @@ export default async function HomePage() {
                       studioSetting?.heroImage?.trim() ||
                       "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=85"
                     }
-                    alt={studioSetting?.storeName ? `Handcrafted Gift by ${studioSetting.storeName}` : "Handcrafted Gift by The Fourfold"}
+                    alt={studioSetting?.storeName ? `Gift item by ${studioSetting.storeName}` : "Gift item by M.E-Commerce"}
                     fill
                     priority
                     className="object-cover"
@@ -261,7 +261,7 @@ export default async function HomePage() {
             pillars={craftPrinciples}
             badge={studioSetting?.principlesBadge || "Craft Principles"}
             heading={studioSetting?.principlesHeading || "What Makes Every Gift Special"}
-            subheading={studioSetting?.principlesSubheading || "Fourfold Standards"}
+            subheading={studioSetting?.principlesSubheading || "Quality Standards"}
           />
         </div>
       </section>
@@ -279,13 +279,13 @@ export default async function HomePage() {
         </p>
         <div className="pt-2">
           <a
-            href={studioSetting?.instagram || "https://instagram.com/thefourfold.official"}
+            href={studioSetting?.instagram || "https://instagram.com/mecommerce.official"}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-accent hover:text-accent-foreground text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs"
           >
             <Instagram className="w-3.5 h-3.5" />
-            <span>{studioSetting?.instagramButtonText || "@thefourfold.official"}</span>
+            <span>{studioSetting?.instagramButtonText || "@mecommerce.official"}</span>
           </a>
         </div>
       </section>

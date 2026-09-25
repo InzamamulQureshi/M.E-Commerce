@@ -92,7 +92,7 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       success: true,
-      message: "Email verified successfully! Welcome to The Fourfold.",
+      message: "Email verified successfully! Welcome to M.E-Commerce.",
       user: {
         id: updatedUser.id,
         name: updatedUser.name,

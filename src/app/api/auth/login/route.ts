@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Your account has been permanently banned from The Fourfold studio." +
+            "Your account has been permanently banned from the store." +
             (user.statusReason ? ` Reason: ${user.statusReason}` : ""),
         },
         { status: 403 }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
           error:
             "Your account is temporarily suspended." +
             (user.statusReason ? ` Reason: ${user.statusReason}.` : "") +
-            " Please contact studio support for assistance.",
+            " Please contact support for assistance.",
         },
         { status: 403 }
       );
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: { verificationCode, verificationExpiresAt },
       });
-      console.log(`[THE FOURFOLD AUTH] 💌 Verification code for ${user.email}: ${verificationCode}`);
+      console.log(`[M.E-COMMERCE AUTH] 💌 Verification code for ${user.email}: ${verificationCode}`);
       return NextResponse.json(
         {
           requiresVerification: true,

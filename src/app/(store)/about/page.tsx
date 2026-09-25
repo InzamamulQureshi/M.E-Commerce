@@ -19,8 +19,8 @@ export default async function AboutPage() {
     setting?.aboutImage?.trim() ||
     "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=1200&q=85";
   const storeLocation = setting?.storeLocation || "Bandra West, Mumbai";
-  const storeName = setting?.storeName || "The Fourfold";
-  const instagram = setting?.instagram || "https://instagram.com/thefourfold.official";
+  const storeName = setting?.storeName || "M.E-Commerce";
+  const instagram = setting?.instagram || "https://instagram.com/mecommerce.official";
 
   const storyBadge = setting?.aboutStoryBadge?.trim() || "The Atelier";
   const storyHeading = setting?.aboutStoryHeading?.trim() || `Behind ${storeName}`;
@@ -153,7 +153,7 @@ export default async function AboutPage() {
           pillars={craftPrinciples}
           badge={setting?.principlesBadge || "Craft Principles"}
           heading={setting?.principlesHeading || "What Makes Every Gift Special"}
-          subheading={setting?.principlesSubheading || "Fourfold Standards"}
+          subheading={setting?.principlesSubheading || "Quality Standards"}
         />
       </div>
     </div>

@@ -42,8 +42,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"UPI_QR" | "COD" | "ONLINE_CARD">("UPI_QR");
   const [paymentRef, setPaymentRef] = useState("");
   const [studioSettings, setStudioSettings] = useState({
-    upiId: process.env.NEXT_PUBLIC_UPI_ID || "thefourfold@oksbi",
-    upiName: process.env.NEXT_PUBLIC_UPI_NAME || "The Fourfold Craft Studio",
+    upiId: process.env.NEXT_PUBLIC_UPI_ID || "mecommerce@oksbi",
+    upiName: process.env.NEXT_PUBLIC_UPI_NAME || "M.E-Commerce Studio",
     enableUpi: true,
     enableCod: true,
     codInstructions: null as string | null,
@@ -76,8 +76,8 @@ export default function CheckoutPage() {
           if (!upi && !cod) cod = true; // Safe fallback
 
           setStudioSettings({
-            upiId: s.upiId || "thefourfold@oksbi",
-            upiName: s.upiName || "The Fourfold Craft Studio",
+            upiId: s.upiId || "mecommerce@oksbi",
+            upiName: s.upiName || "M.E-Commerce Studio",
             enableUpi: upi,
             enableCod: cod,
             codInstructions: s.codInstructions || null,

@@ -1,127 +1,147 @@
-# 🎁 The Fourfold — Bespoke Handcrafted Gifting Studio & E-Commerce Platform
+# M.E-Commerce
 
-A production-ready, full-stack e-commerce web application built for artisanal studios and handcrafted gift shops. Features a customer storefront with rich personalization options, UPI QR transfer & COD checkout, customer account management, and a comprehensive artisan admin dashboard.
+A modern, minimalist, and fully modular full-stack e-commerce platform built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, and **Prisma ORM**.
 
----
-
-## 🌟 Key Highlights & Features
-
-### 🛍️ Customer Storefront
-- **Artisan Catalog**: Dynamic product browsing with category and subcategory filtering, search, and responsive layout.
-- **Bespoke Product Customization**:
-  - Personalized recipient calligraphy messages & recipient names.
-  - Custom melted wax seal color selection (Antique Gold, Burgundy Rose, Botanical Emerald).
-  - Studio gift wrapping & keepsake packaging options.
-  - Up to 4 curated craftsmanship highlights per product.
-- **Multi-Address Checkout**:
-  - Auto-fills default address from customer's account address book.
-  - Interactive saved address picker for seamless 1-click address switching.
-  - Zero hardcoded defaults for cities or states.
-- **Payment Methods**:
-  - **UPI QR Transfer**: Real-time QR generation with 12-digit transaction ID (UTR) verification.
-  - **Cash on Delivery (COD)**: With configurable instructions.
-- **Smart Promo Code Engine**:
-  - Supports percentage or flat discounts with minimum order thresholds and maximum discount capping.
-  - Audience targeting: New customers, repeat customers, or specific user accounts with redemption tracking.
-- **Order Tracking**: Real-time order progress tracking (Pending ➔ Confirmed ➔ Handcrafting ➔ Packed ➔ Shipped ➔ Delivered).
-- **Verified Customer Reviews**: Star ratings, verified buyer badges, and reviews showcase.
-
-### 🛡️ Artisan Admin Portal (`/admin/dashboard`)
-- **Operations Overview**: Real-time metrics on revenue, active crafting queue, inventory alerts, and bestsellers.
-- **Order Fulfillment**: Complete order dossier, 1-click WhatsApp customer messaging, courier tracking assignment, printable packing slips, and order status lifecycle management.
-- **Catalog & Inventory Suite**: Add and edit creations with multi-image gallery, materials, dimensions, stock counts, and customizable feature toggles.
-- **Customer Directory & Moderation**:
-  - Patron directory with lifetime spend, order count, and contact information.
-  - **Account Moderation**: Suspend or permanently ban problem accounts with logged reasons and policy citations.
-  - Instant filter tabs for All, Active, Suspended, and Banned patrons.
-  - Banned and suspended accounts are strictly blocked from logging in or placing orders.
-- **Studio Settings Hub**:
-  - Branding, logo size, announcement bar toggles, homepage showcases, shipping fees, free shipping thresholds, UPI configurations, and theme customization.
-- **Mobile-Responsive Admin**: Viewport-safe layout (`100dvh`), slide-out drawer, and bottom navigation optimized for mobile operation.
+Designed for creators, independent brands, and bespoke studios who want an editorial storefront paired with complete control over branding, catalog, and checkout.
 
 ---
 
-## 🛠️ Technology Stack
+## Architecture & Core Principles
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database & ORM**: MySQL with Prisma ORM 5
-- **Authentication**: JWT session tokens stored in secure, `httpOnly` cookies with bcryptjs password hashing
-- **Icons**: Lucide React
-- **Animations & Effects**: Canvas Confetti, Tailwind CSS animations
+### 1. Minimalist Aesthetic
+- **Editorial Typography & Whitespace**: Distraction-free layout designed around product imagery and clean lines.
+- **Native Dark & Light Mode**: Seamless theme switching with persistent user preference.
+- **Mobile-First Experience**: Fluid mobile drawer, sticky bottom navigation, and viewport-safe modals (`100dvh`).
+
+### 2. 100% Modular by Design
+- **Live Branding Hub**: Configure store name, location, logo size, brand accent color, and typography without code changes.
+- **Custom SVG Favicons & Monograms**: Live raw SVG markup editor, SVG data URIs, or automated store monogram generation served at `/api/branding/favicon.svg`.
+- **Dynamic OpenGraph & Social Cards**: Custom OG titles, descriptions, and banner images with live preview in the admin panel.
+- **Modular Product Customization**: Toggle gift wrapping, wax seal accents, personal gift notes, and craft lead times on a per-product basis.
+- **Flexible Payments**: Built-in support for dynamic **UPI QR Transfer** (with instant UTR payment reference validation) and **Cash on Delivery (COD)**.
+
+### 3. Integrated Admin Dashboard (`/admin/dashboard`)
+- **Operations & Orders**: Complete order dossier, live status transitions, courier tracking, and printable packing slips.
+- **Catalog & Inventory**: Manage products, categories, subcategories, stock levels, and multi-image galleries.
+- **Promotions & Coupons**: Percentage or fixed-amount discounts with minimum spend rules, expiration dates, and usage limits.
+- **Customer Directory & Moderation**: Customer spend analytics with suspension and permanent ban controls.
+- **Review Moderation**: Star ratings, verified buyer badges, and official store team replies.
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack
 
-### 1. Prerequisites
-- **Node.js**: v18.18+ or v20+
-- **MySQL**: 8.0+ (Local, Docker, WSL, or hosted MySQL)
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router, Server & Client Components) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS |
+| Database | MySQL 8.0+ |
+| ORM | Prisma ORM 5 |
+| Authentication | JWT session tokens in secure `httpOnly` cookies + bcryptjs |
+| Icons | Lucide React |
 
-### 2. Clone the Repository
+---
+
+## Quickstart
+
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/thefourfold-ecommerce.git
-cd thefourfold-ecommerce
+git clone https://github.com/InzamamulQureshi/M.E-Commerce.git
+cd M.E-Commerce
 ```
 
-### 3. Install Dependencies
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 4. Configure Environment Variables
+### 3. Configure Environment Variables
 Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your secure credentials:
+Set your configuration:
 ```env
-# Database Connection
-DATABASE_URL="mysql://username:password@localhost:3306/thefourfold"
+# Database Connection (Docker local or hosted MySQL)
+DATABASE_URL="mysql://root:password@localhost:3306/mecommerce"
 
-# Server Secrets (Keep private - never commit to Git)
-BETTER_AUTH_SECRET="generate_a_long_random_64_char_secret_key"
-ADMIN_SECRET_KEY="choose_a_strong_master_admin_passcode"
-ADMIN_EMAIL="artisan@thefourfold.com"
+# Server Secrets (Keep private)
+BETTER_AUTH_SECRET="generate_a_long_random_secret_string"
+ADMIN_SECRET_KEY="choose_a_secure_admin_passcode"
+ADMIN_EMAIL="admin@mecommerce.dev"
 
-# Public Branding & Payment Details
-NEXT_PUBLIC_STORE_NAME="The Fourfold"
-NEXT_PUBLIC_STORE_TAGLINE="Handcrafted with Love, Folded to Cherish"
-NEXT_PUBLIC_INSTAGRAM="https://instagram.com/thefourfold.official"
+# Store Defaults (Editable later in Admin Settings)
+NEXT_PUBLIC_STORE_NAME="M.E-Commerce"
+NEXT_PUBLIC_STORE_TAGLINE="Modern, Minimalist & Modular E-Commerce"
+NEXT_PUBLIC_INSTAGRAM="https://instagram.com/mecommerce.official"
 NEXT_PUBLIC_WHATSAPP="+919876543210"
-NEXT_PUBLIC_UPI_ID="thefourfold@oksbi"
-NEXT_PUBLIC_UPI_NAME="The Fourfold Craft Studio"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_UPI_ID="mecommerce@oksbi"
+NEXT_PUBLIC_UPI_NAME="M.E-Commerce Studio"
 ```
 
-### 5. Initialize the Database
+### 4. Start Local Database (Optional: Docker)
 ```bash
-# Push schema to MySQL database
+docker-compose up -d
+```
+
+### 5. Push Database Schema & Seed Catalog
+```bash
+# Push Prisma schema to MySQL
 npx prisma db push
 
-# (Optional) Seed demo products, categories, and initial data
+# (Optional) Seed demo products, categories, and settings
 npm run db:seed
 ```
 
-### 6. Run Development Server
+### 6. Start Development Server
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Visit:
+- **Storefront**: [http://localhost:3000](http://localhost:3000)
+- **Admin Portal**: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)  
+  *Default admin: `admin@mecommerce.dev` (or authenticate using your `ADMIN_SECRET_KEY`)*
 
 ---
 
-## 🔐 Security & Deployment Best Practices
+## Directory Structure
 
-- **Never Commit `.env`**: `.env` is listed in `.gitignore` to prevent database passwords and auth secrets from leaking to GitHub.
-- **Production Secrets**: Always set strong, random values for `BETTER_AUTH_SECRET` and `ADMIN_SECRET_KEY` on your production hosting provider.
-- **Client vs. Server Safety**: Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. All database queries, credentials, and hashing remain strictly server-side.
+```
+├── prisma/
+│   ├── schema.prisma        # Database models (User, Product, Order, StudioSetting, etc.)
+│   └── seed.ts              # Initial catalog and store configuration seed
+├── src/
+│   ├── app/
+│   │   ├── (store)/         # Public customer storefront routes
+│   │   ├── admin/           # Admin dashboard, catalog, orders, and settings routes
+│   │   ├── api/             # REST endpoints (auth, orders, products, settings, branding)
+│   │   └── layout.tsx       # Root layout with dynamic metadata and SVG favicon injection
+│   ├── components/
+│   │   ├── admin/           # Admin modals, sidebar, table views, and settings forms
+│   │   └── store/           # Product cards, cart drawer, checkout, and layout elements
+│   ├── lib/
+│   │   ├── auth.ts          # Server-side auth, JWT token signing, and session cache
+│   │   ├── auth-client.ts   # Client auth hook and synchronization
+│   │   ├── cart-store.ts    # Reactive cart store with local persistence
+│   │   └── db.ts            # Prisma client singleton
+│   └── middleware.ts        # Route guard for admin web pages and protected APIs
+├── docker-compose.yml       # Local MySQL container definition
+└── tailwind.config.js       # Design tokens and theme extensions
+```
 
 ---
 
-## 📄 License
+## Security
 
+- **Server-Side Credential Isolation**: Database credentials and authentication secrets remain strictly server-side. No private keys are prefixed with `NEXT_PUBLIC_`.
+- **Role-Based Guards**: Protected routes (`/admin/dashboard/*` and `/api/admin/*`) are guarded by Next.js middleware and session role validation.
+- **Account Moderation**: Suspended or banned users are automatically denied login, API ordering, and checkout capabilities.
 
+---
+
+## License
+
+MIT License. Open source and free to use for personal and commercial projects.

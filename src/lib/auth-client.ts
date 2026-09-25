@@ -10,15 +10,15 @@ export interface AuthUser {
   phone?: string | null;
 }
 
-const AUTH_EVENT_NAME = "fourfold:auth-state-change";
+const AUTH_EVENT_NAME = "mecommerce:auth-state-change";
 
 export function notifyAuthChange(user: AuthUser | null) {
   if (typeof window === "undefined") return;
   try {
     if (user) {
-      localStorage.setItem("fourfold_user_cache", JSON.stringify(user));
+      localStorage.setItem("mecommerce_user_cache", JSON.stringify(user));
     } else {
-      localStorage.removeItem("fourfold_user_cache");
+      localStorage.removeItem("mecommerce_user_cache");
     }
   } catch {}
   window.dispatchEvent(new CustomEvent(AUTH_EVENT_NAME, { detail: user }));
@@ -35,13 +35,13 @@ async function fetchMeOnce(): Promise<AuthUser | null> {
         const data = await res.json();
         if (data?.user) {
           try {
-            localStorage.setItem("fourfold_user_cache", JSON.stringify(data.user));
+            localStorage.setItem("mecommerce_user_cache", JSON.stringify(data.user));
           } catch {}
           return data.user as AuthUser;
         }
       }
       try {
-        localStorage.removeItem("fourfold_user_cache");
+        localStorage.removeItem("mecommerce_user_cache");
       } catch {}
       return null;
     } catch {
@@ -74,7 +74,7 @@ export function useAuthSession() {
   useEffect(() => {
     // Safely hydrate from localStorage immediately after mount
     try {
-      const cached = localStorage.getItem("fourfold_user_cache");
+      const cached = localStorage.getItem("mecommerce_user_cache");
       if (cached) {
         setUser(JSON.parse(cached));
       }

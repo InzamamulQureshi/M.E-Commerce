@@ -121,7 +121,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
   const [categoryStartIndex, setCategoryStartIndex] = useState(0);
 
   const [brandSettings, setBrandSettings] = useState({
-    storeName: initialSettings?.storeName || "The Fourfold",
+    storeName: initialSettings?.storeName || "M.E-Commerce",
     storeLocation: initialSettings?.storeLocation || "Studio • Mumbai",
     logoUrl: initialSettings?.logoUrl ?? null,
     logoWidth: initialSettings?.logoWidth || 130,
@@ -149,7 +149,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
       .then((data) => {
         if (data?.settings) {
           setBrandSettings({
-            storeName: data.settings.storeName || "The Fourfold",
+            storeName: data.settings.storeName || "M.E-Commerce",
             storeLocation: data.settings.storeLocation || "Studio • Mumbai",
             logoUrl: data.settings.logoUrl || null,
             logoWidth: Math.min(160, Math.max(60, data.settings.logoWidth || 130)),
@@ -491,7 +491,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
                 >
                   <img
                     src={brandSettings.logoUrl}
-                    alt={brandSettings.storeName || "The Fourfold"}
+                    alt={brandSettings.storeName || "M.E-Commerce"}
                     onError={() => setLogoImgFailed(true)}
                     className="max-h-[42px] w-auto max-w-full object-contain select-none"
                   />
@@ -499,7 +499,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
               ) : (
                 <>
                   <span className="text-base lg:text-lg xl:text-2xl font-bold tracking-[0.14em] text-[#181513] dark:text-[#FAF8F5] group-hover:text-[#A64732] dark:group-hover:text-[#E07A5F] transition-colors uppercase whitespace-nowrap">
-                    {brandSettings.storeName || "The Fourfold"}
+                    {brandSettings.storeName || "M.E-Commerce"}
                   </span>
                   <span className="text-[7.5px] lg:text-[8.5px] xl:text-[9.5px] tracking-[0.22em] uppercase text-[#736B62] dark:text-[#B5ACA1] font-medium -mt-0.5 whitespace-nowrap">
                     {brandSettings.storeLocation || "Studio • Mumbai"}
@@ -671,7 +671,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
               >
                 <img
                   src={brandSettings.logoUrl}
-                  alt={brandSettings.storeName || "The Fourfold"}
+                  alt={brandSettings.storeName || "M.E-Commerce"}
                   onError={() => setLogoImgFailed(true)}
                   className="max-h-[36px] w-auto max-w-full object-contain select-none"
                 />
@@ -679,7 +679,7 @@ export function Header({ initialSettings }: HeaderProps = {}) {
             ) : (
               <>
                 <span className="text-sm sm:text-base font-bold tracking-[0.12em] uppercase text-[#181513] dark:text-[#FAF8F5] whitespace-nowrap text-left">
-                  {brandSettings.storeName || "The Fourfold"}
+                  {brandSettings.storeName || "M.E-Commerce"}
                 </span>
                 <span className="text-[7.5px] sm:text-[8.5px] tracking-[0.12em] uppercase text-[#736B62] dark:text-[#B5ACA1] font-medium -mt-0.5 whitespace-nowrap text-left">
                   {brandSettings.storeLocation || "Studio • Mumbai"}

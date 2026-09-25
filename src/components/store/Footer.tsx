@@ -17,15 +17,15 @@ export interface FooterProps {
 }
 
 export function Footer({ settings, categories }: FooterProps) {
-  const storeName = settings?.storeName || "The Fourfold";
-  const tagline = settings?.tagline || "Handcrafted Gifting Studio • Mumbai, India";
+  const storeName = settings?.storeName || "M.E-Commerce";
+  const tagline = settings?.tagline || "Modern, Minimalist & Modular E-Commerce";
   const footerAbout =
     settings?.footerAbout?.trim() ||
-    "Personalized explosion boxes, handmade cards, keepsake albums, and everlasting crochet flowers. Hand-folded with precision in our Bandra studio.";
-  const instagramUrl = settings?.instagram || "https://instagram.com/thefourfold.official";
+    "Everyday essentials, bespoke creations, and curated gifts designed with minimalist aesthetic and modern precision.";
+  const instagramUrl = settings?.instagram || "https://instagram.com/mecommerce.official";
   
   // Extract Instagram handle for clean label
-  let instagramHandle = "@thefourfold.official";
+  let instagramHandle = "@mecommerce.official";
   if (instagramUrl) {
     const cleaned = instagramUrl.replace(/\/$/, "");
     const parts = cleaned.split("/");
@@ -155,7 +155,7 @@ export function Footer({ settings, categories }: FooterProps) {
                 </Link>
               </li>
               <li>
-                <a href="mailto:studio@thefourfold.com" className="hover:text-white transition-colors">
+                <a href="mailto:support@mecommerce.dev" className="hover:text-white transition-colors">
                   Custom Orders
                 </a>
               </li>

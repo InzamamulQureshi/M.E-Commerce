@@ -166,7 +166,7 @@ export default function AdminReviewsPage() {
             Reviews & Responses ({totalCount})
           </h1>
           <p className="text-xs text-[#6E665D] dark:text-[#A89F91] mt-1">
-            Reply directly to customer feedback as The Fourfold Team, or remove invalid reviews.
+            Reply directly to customer feedback as the Store Team, or remove invalid reviews.
           </p>
         </div>
 
@@ -309,7 +309,7 @@ export default function AdminReviewsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A64732] dark:text-[#E07A5F] flex items-center gap-1">
                       <CornerDownRight className="w-3 h-3" />
-                      <span>The Fourfold Studio Reply</span>
+                      <span>Store Team Reply</span>
                     </span>
                     <button
                       onClick={handleCancelReply}
@@ -349,7 +349,7 @@ export default function AdminReviewsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] flex items-center gap-1">
                       <CornerDownRight className="w-3 h-3" />
-                      <span>The Fourfold Team Reply</span>
+                      <span>Store Team Reply</span>
                       {rev.adminRepliedAt && (
                         <span className="text-[#786F64] dark:text-[#A89F91] font-normal lowercase">
                           • {formatDate(rev.adminRepliedAt)}

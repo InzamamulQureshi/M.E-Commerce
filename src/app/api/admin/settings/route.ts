@@ -6,13 +6,13 @@ export const dynamic = "force-dynamic";
 
 // Default fallback settings
 const DEFAULT_SETTINGS = {
-  storeName: process.env.NEXT_PUBLIC_STORE_NAME || "The Fourfold",
-  tagline: process.env.NEXT_PUBLIC_STORE_TAGLINE || "Handcrafted with Love, Folded to Cherish",
-  instagram: process.env.NEXT_PUBLIC_INSTAGRAM || "https://instagram.com/thefourfold.official",
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "+919876543210",
-  upiId: process.env.NEXT_PUBLIC_UPI_ID || "thefourfold@oksbi",
-  upiName: process.env.NEXT_PUBLIC_UPI_NAME || "The Fourfold Craft Studio",
-  studioAddress: "Bandra West, Mumbai 400050, Maharashtra, India",
+  storeName: process.env.NEXT_PUBLIC_STORE_NAME || "M.E-Commerce",
+  tagline: process.env.NEXT_PUBLIC_STORE_TAGLINE || "Minimalist, Modular E-Commerce Platform",
+  instagram: process.env.NEXT_PUBLIC_INSTAGRAM || "https://instagram.com",
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "+1234567890",
+  upiId: process.env.NEXT_PUBLIC_UPI_ID || "merchant@upi",
+  upiName: process.env.NEXT_PUBLIC_UPI_NAME || "M.E-Commerce Store",
+  studioAddress: "Design District, Atelier Studio",
 };
 
 // GET studio environment settings & diagnostics
@@ -50,7 +50,7 @@ export async function GET() {
       settings: {
         storeName: settingRecord.storeName,
         tagline: settingRecord.tagline,
-        storeLocation: settingRecord.storeLocation || "Studio • Mumbai",
+        storeLocation: settingRecord.storeLocation || "Studio • Modern Atelier",
         instagram: settingRecord.instagram,
         whatsapp: settingRecord.whatsapp,
         upiId: settingRecord.upiId,
@@ -58,6 +58,11 @@ export async function GET() {
         studioAddress: settingRecord.studioAddress,
         logoUrl: settingRecord.logoUrl || null,
         logoWidth: settingRecord.logoWidth || 130,
+        ogTitle: settingRecord.ogTitle || null,
+        ogDescription: settingRecord.ogDescription || null,
+        ogImageUrl: settingRecord.ogImageUrl || null,
+        faviconSvg: settingRecord.faviconSvg || null,
+        brandAccentColor: settingRecord.brandAccentColor || "#181513",
         activeTheme: settingRecord.activeTheme || "warm-terracotta",
         currencyCode: settingRecord.currencyCode || "INR",
         currencySymbol: settingRecord.currencySymbol || "₹",
@@ -74,21 +79,21 @@ export async function GET() {
         aboutDescription: settingRecord.aboutDescription || null,
         aboutImage: settingRecord.aboutImage || null,
         aboutStoryBadge: settingRecord.aboutStoryBadge || "The Atelier",
-        aboutStoryHeading: settingRecord.aboutStoryHeading || "Behind The Fourfold",
+        aboutStoryHeading: settingRecord.aboutStoryHeading || "Behind M.E-Commerce",
         footerAbout: settingRecord.footerAbout || null,
-        footerDispatchNote: settingRecord.footerDispatchNote || "Pan-India Insured Dispatch",
-        footerCopyrightText: settingRecord.footerCopyrightText || "Handcrafted with care in Mumbai.",
+        footerDispatchNote: settingRecord.footerDispatchNote || "Insured Express Dispatch",
+        footerCopyrightText: settingRecord.footerCopyrightText || "Crafted with precision & care.",
         footerSecurityBadges: settingRecord.footerSecurityBadges || "Secure UPI & Cards • Insured Transit",
         searchPopularTags: settingRecord.searchPopularTags || "Explosion Boxes, Pop-up Cards, Linen Scrapbooks, Crochet Tulips",
         curatedSpotlightsConfig: settingRecord.curatedSpotlightsConfig || null,
         craftPrinciples: settingRecord.craftPrinciples || null,
         principlesBadge: settingRecord.principlesBadge || "Craft Principles",
         principlesHeading: settingRecord.principlesHeading || "What Makes Every Gift Special",
-        principlesSubheading: settingRecord.principlesSubheading || "Fourfold Standards",
-        instagramBadge: settingRecord.instagramBadge || "Bandra West • Mumbai",
+        principlesSubheading: settingRecord.principlesSubheading || "Core Quality Standards",
+        instagramBadge: settingRecord.instagramBadge || "Design Studio",
         instagramHeading: settingRecord.instagramHeading || "Watch Creations Unfold Daily",
         instagramDescription: settingRecord.instagramDescription || null,
-        instagramButtonText: settingRecord.instagramButtonText || "@thefourfold.official",
+        instagramButtonText: settingRecord.instagramButtonText || "@mecommerce",
         enableAnnouncement: settingRecord.enableAnnouncement ?? true,
         announcementText: settingRecord.announcementText || "Complimentary signature wax-sealed keepsake card with all orders",
         announcementLink: settingRecord.announcementLink || "/catalog",
@@ -145,6 +150,11 @@ export async function PUT(request: Request) {
         studioAddress,
         logoUrl,
         logoWidth,
+        ogTitle,
+        ogDescription,
+        ogImageUrl,
+        faviconSvg,
+        brandAccentColor,
         activeTheme,
         currencyCode,
         currencySymbol,
@@ -196,9 +206,9 @@ export async function PUT(request: Request) {
       } = body.studioSettings;
 
       const updateData: any = {};
-      if (storeName !== undefined) updateData.storeName = String(storeName).trim() || "The Fourfold";
+      if (storeName !== undefined) updateData.storeName = String(storeName).trim() || "M.E-Commerce";
       if (tagline !== undefined) updateData.tagline = String(tagline).trim();
-      if (storeLocation !== undefined) updateData.storeLocation = String(storeLocation).trim() || "Studio • Mumbai";
+      if (storeLocation !== undefined) updateData.storeLocation = String(storeLocation).trim() || "Studio • Modern Atelier";
       if (instagram !== undefined) updateData.instagram = String(instagram).trim();
       if (whatsapp !== undefined) updateData.whatsapp = String(whatsapp).trim();
       if (upiId !== undefined) updateData.upiId = String(upiId).trim();
@@ -211,6 +221,13 @@ export async function PUT(request: Request) {
         const parsedWidth = parseInt(String(logoWidth), 10);
         updateData.logoWidth = isNaN(parsedWidth) ? 130 : Math.min(160, Math.max(60, parsedWidth));
       }
+
+      // Modular Social, SEO & Favicon / Brand Assets
+      if (ogTitle !== undefined) updateData.ogTitle = ogTitle ? String(ogTitle).trim() : null;
+      if (ogDescription !== undefined) updateData.ogDescription = ogDescription ? String(ogDescription).trim() : null;
+      if (ogImageUrl !== undefined) updateData.ogImageUrl = ogImageUrl ? String(ogImageUrl).trim() : null;
+      if (faviconSvg !== undefined) updateData.faviconSvg = faviconSvg ? String(faviconSvg).trim() : null;
+      if (brandAccentColor !== undefined) updateData.brandAccentColor = brandAccentColor ? String(brandAccentColor).trim() : "#181513";
 
       // Theme Preset
       if (activeTheme !== undefined) {
@@ -266,12 +283,12 @@ export async function PUT(request: Request) {
       if (aboutDescription !== undefined) updateData.aboutDescription = aboutDescription ? String(aboutDescription).trim() : null;
       if (aboutImage !== undefined) updateData.aboutImage = aboutImage ? String(aboutImage).trim() : null;
       if (aboutStoryBadge !== undefined) updateData.aboutStoryBadge = aboutStoryBadge ? String(aboutStoryBadge).trim() : "The Atelier";
-      if (aboutStoryHeading !== undefined) updateData.aboutStoryHeading = aboutStoryHeading ? String(aboutStoryHeading).trim() : "Behind The Fourfold";
+      if (aboutStoryHeading !== undefined) updateData.aboutStoryHeading = aboutStoryHeading ? String(aboutStoryHeading).trim() : "Behind M.E-Commerce";
 
       // Modular Footer
       if (footerAbout !== undefined) updateData.footerAbout = footerAbout ? String(footerAbout).trim() : null;
-      if (footerDispatchNote !== undefined) updateData.footerDispatchNote = footerDispatchNote ? String(footerDispatchNote).trim() : "Pan-India Insured Dispatch";
-      if (footerCopyrightText !== undefined) updateData.footerCopyrightText = footerCopyrightText ? String(footerCopyrightText).trim() : "Handcrafted with care in Mumbai.";
+      if (footerDispatchNote !== undefined) updateData.footerDispatchNote = footerDispatchNote ? String(footerDispatchNote).trim() : "Insured Express Dispatch";
+      if (footerCopyrightText !== undefined) updateData.footerCopyrightText = footerCopyrightText ? String(footerCopyrightText).trim() : "Crafted with precision & care.";
       if (footerSecurityBadges !== undefined) updateData.footerSecurityBadges = footerSecurityBadges ? String(footerSecurityBadges).trim() : "Secure UPI & Cards • Insured Transit";
 
       // Modular Search Tags
@@ -301,13 +318,13 @@ export async function PUT(request: Request) {
       }
       if (principlesBadge !== undefined) updateData.principlesBadge = principlesBadge ? String(principlesBadge).trim() : "Craft Principles";
       if (principlesHeading !== undefined) updateData.principlesHeading = principlesHeading ? String(principlesHeading).trim() : "What Makes Every Gift Special";
-      if (principlesSubheading !== undefined) updateData.principlesSubheading = principlesSubheading ? String(principlesSubheading).trim() : "Fourfold Standards";
+      if (principlesSubheading !== undefined) updateData.principlesSubheading = principlesSubheading ? String(principlesSubheading).trim() : "Core Quality Standards";
 
       // Modular Instagram Callout Section (Homepage)
-      if (instagramBadge !== undefined) updateData.instagramBadge = instagramBadge ? String(instagramBadge).trim() : "Bandra West • Mumbai";
+      if (instagramBadge !== undefined) updateData.instagramBadge = instagramBadge ? String(instagramBadge).trim() : "Design Studio";
       if (instagramHeading !== undefined) updateData.instagramHeading = instagramHeading ? String(instagramHeading).trim() : "Watch Creations Unfold Daily";
       if (instagramDescription !== undefined) updateData.instagramDescription = instagramDescription ? String(instagramDescription).trim() : null;
-      if (instagramButtonText !== undefined) updateData.instagramButtonText = instagramButtonText ? String(instagramButtonText).trim() : "@thefourfold.official";
+      if (instagramButtonText !== undefined) updateData.instagramButtonText = instagramButtonText ? String(instagramButtonText).trim() : "@mecommerce";
 
       // Modular Announcement Bar (Header)
       if (enableAnnouncement !== undefined) updateData.enableAnnouncement = Boolean(enableAnnouncement);

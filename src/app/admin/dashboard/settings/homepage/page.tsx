@@ -69,11 +69,11 @@ export default function HomepageSettingsPage() {
   const [instagramDescription, setInstagramDescription] = useState(
     "See folding demonstrations, custom calligraphy dedications, and unboxings on our official studio Instagram."
   );
-  const [instagramButtonText, setInstagramButtonText] = useState("@thefourfold.official");
+  const [instagramButtonText, setInstagramButtonText] = useState("@mecommerce.official");
 
   const [principlesBadge, setPrinciplesBadge] = useState("Craft Principles");
   const [principlesHeading, setPrinciplesHeading] = useState("What Makes Every Gift Special");
-  const [principlesSubheading, setPrinciplesSubheading] = useState("Fourfold Standards");
+  const [principlesSubheading, setPrinciplesSubheading] = useState("Quality Standards");
   const [craftPrinciplesList, setCraftPrinciplesList] = useState<CraftPrinciple[]>(DEFAULT_CRAFT_PRINCIPLES);
 
   const [categoriesList, setCategoriesList] = useState<Array<{ id: string; name: string }>>([]);
@@ -104,11 +104,11 @@ export default function HomepageSettingsPage() {
             s.instagramDescription ||
               "See folding demonstrations, custom calligraphy dedications, and unboxings on our official studio Instagram."
           );
-          setInstagramButtonText(s.instagramButtonText || "@thefourfold.official");
+          setInstagramButtonText(s.instagramButtonText || "@mecommerce.official");
 
           setPrinciplesBadge(s.principlesBadge || "Craft Principles");
           setPrinciplesHeading(s.principlesHeading || "What Makes Every Gift Special");
-          setPrinciplesSubheading(s.principlesSubheading || "Fourfold Standards");
+          setPrinciplesSubheading(s.principlesSubheading || "Quality Standards");
 
           if (s.craftPrinciples) {
             try {
@@ -391,7 +391,7 @@ export default function HomepageSettingsPage() {
                 type="text"
                 value={instagramButtonText}
                 onChange={(e) => setInstagramButtonText(e.target.value)}
-                placeholder="e.g. @thefourfold.official"
+                placeholder="e.g. @mecommerce.official"
                 className="w-full px-3.5 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
             </div>

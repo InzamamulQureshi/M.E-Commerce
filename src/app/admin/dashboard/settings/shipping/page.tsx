@@ -289,7 +289,7 @@ export default function ShippingPaymentSettingsPage() {
                 type="text"
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
-                placeholder="e.g. thefourfold@oksbi"
+                placeholder="e.g. mecommerce@oksbi"
                 className="w-full px-3.5 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
               <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">
@@ -305,7 +305,7 @@ export default function ShippingPaymentSettingsPage() {
                 type="text"
                 value={upiName}
                 onChange={(e) => setUpiName(e.target.value)}
-                placeholder="e.g. The Fourfold Craft Studio"
+                placeholder="e.g. M.E-Commerce Studio"
                 className="w-full px-3.5 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
               <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">

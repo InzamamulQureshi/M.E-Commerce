@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
+import { db } from "@/lib/db";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export const size = {
   width: 180,
@@ -8,7 +9,23 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default function AppleIcon() {
+export default async function AppleIcon() {
+  let initial = "M";
+  let accent = "#E07A5F";
+
+  try {
+    const s = await db.studioSetting.findUnique({
+      where: { id: "default" },
+      select: { storeName: true, brandAccentColor: true },
+    });
+    if (s?.storeName?.trim()) {
+      initial = s.storeName.trim().charAt(0).toUpperCase();
+    }
+    if (s?.brandAccentColor) {
+      accent = s.brandAccentColor;
+    }
+  } catch {}
+
   return new ImageResponse(
     (
       <div
@@ -24,10 +41,10 @@ export default function AppleIcon() {
           color: "#FAF8F5",
           borderRadius: "40px",
           fontWeight: 800,
-          border: "4px solid #A64732",
+          border: `4px solid ${accent}`,
         }}
       >
-        <span style={{ color: "#E07A5F" }}>F</span>
+        <span style={{ color: accent }}>{initial}</span>
       </div>
     ),
     {

@@ -13,7 +13,7 @@ export default async function AdminDashboardLayout({
     redirect("/admin/login");
   }
 
-  let storeName = "The Fourfold";
+  let storeName = "M.E-Commerce";
   try {
     const setting = await db.studioSetting.findUnique({
       where: { id: "default" },

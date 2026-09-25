@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export function AdminSidebar({ initialStoreName }: { initialStoreName?: string }) {
-  const [storeName, setStoreName] = useState(initialStoreName || "The Fourfold");
+  const [storeName, setStoreName] = useState(initialStoreName || "M.E-Commerce");
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -111,6 +111,7 @@ export function AdminSidebar({ initialStoreName }: { initialStoreName?: string }
 
   const settingsSubItems = [
     { label: "Hub & Branding", href: "/admin/dashboard/settings", exact: true },
+    { label: "SEO & OG Branding", href: "/admin/dashboard/settings/branding" },
     { label: "Color Themes", href: "/admin/dashboard/settings/themes" },
     { label: "Header & Navigation", href: "/admin/dashboard/settings/announcement" },
     { label: "Homepage & Hero", href: "/admin/dashboard/settings/homepage" },

@@ -13,6 +13,7 @@ import {
   Shield,
   ArrowLeft,
   ExternalLink,
+  Share2,
 } from "lucide-react";
 
 interface SettingsHeaderProps {
@@ -25,6 +26,7 @@ interface SettingsHeaderProps {
 
 const SETTINGS_PAGES = [
   { label: "Hub & Branding", href: "/admin/dashboard/settings", icon: Settings, exact: true },
+  { label: "SEO & OG Branding", href: "/admin/dashboard/settings/branding", icon: Share2 },
   { label: "Color Themes", href: "/admin/dashboard/settings/themes", icon: Palette },
   { label: "Announcement Bar", href: "/admin/dashboard/settings/announcement", icon: Megaphone },
   { label: "Homepage & Hero", href: "/admin/dashboard/settings/homepage", icon: LayoutGrid },

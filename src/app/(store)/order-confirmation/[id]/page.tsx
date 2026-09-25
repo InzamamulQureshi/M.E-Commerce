@@ -31,8 +31,8 @@ export default async function OrderConfirmationPage({ params }: OrderConfirmatio
 
   const whatsappMessage = encodeURIComponent(
     isRejected
-      ? `Hello The Fourfold Studio! My order #${order.orderNumber} was marked as rejected (Reason: ${rejectionReason || "Payment unverified"}). I'd like to share my payment screenshot for review.`
-      : `Hello The Fourfold Studio! I've placed order #${order.orderNumber} for ₹${order.finalTotal}. Looking forward to receiving this handcrafted creation!`
+      ? `Hello M.E-Commerce! My order #${order.orderNumber} was marked as rejected (Reason: ${rejectionReason || "Payment unverified"}). I'd like to share my payment screenshot for review.`
+      : `Hello M.E-Commerce! I've placed order #${order.orderNumber} for ₹${order.finalTotal}. Looking forward to receiving my order!`
   );
 
   return (

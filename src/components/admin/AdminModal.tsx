@@ -52,13 +52,13 @@ export function AdminModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] w-screen h-[100dvh] bg-black/65 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-[100] w-full h-[100dvh] bg-black/65 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto overscroll-contain animate-in fade-in duration-200 select-none"
       onClick={onClose}
       aria-modal="true"
       role="dialog"
     >
       <div
-        className={`w-full ${maxWidth} relative my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 select-text ${className}`}
+        className={`w-full ${maxWidth} relative my-auto max-h-[92dvh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 select-text overflow-hidden ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

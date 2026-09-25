@@ -2,10 +2,10 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "The Fourfold | Handcrafted Gifting Studio",
-    short_name: "The Fourfold",
+    name: "M.E-Commerce | Minimalist, Modular E-Commerce Platform",
+    short_name: "M.E-Commerce",
     description:
-      "Personalized explosion boxes, handmade cards, keepsake scrapbooks, and everlasting crochet flowers folded by hand in Mumbai.",
+      "Minimalist, modular, open-source e-commerce platform with bespoke customization, fast checkout, and studio management.",
     start_url: "/",
     display: "standalone",
     background_color: "#FAF8F5",

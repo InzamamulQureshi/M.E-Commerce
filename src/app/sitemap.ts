@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://thefourfold.com";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mecommerce.dev";
 
   // Static core routes
   const staticRoutes: MetadataRoute.Sitemap = [

@@ -43,6 +43,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [storeName, setStoreName] = useState("M.E-Commerce");
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,6 +128,12 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetch("/api/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.settings?.storeName) setStoreName(data.settings.storeName);
+      })
+      .catch(() => {});
   }, [fetchOrders]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -313,20 +320,20 @@ export default function AdminOrdersPage() {
 
     let statusText = "";
     if (order.status === "CONFIRMED") {
-      statusText = "has been confirmed and our artisan team will begin scoring and folding your gift!";
+      statusText = "has been confirmed and our artisan team will begin crafting your order!";
     } else if (order.status === "HANDCRAFTING") {
-      statusText = "is currently being handcrafted in our Bandra studio!";
+      statusText = "is currently in production at our studio!";
     } else if (order.status === "PACKED") {
-      statusText = "is packed in our protective double-walled gift box and ready for dispatch!";
+      statusText = "is packed and ready for dispatch!";
     } else if (order.status === "SHIPPED") {
       statusText = `has been dispatched via ${order.courierName || "courier"}${order.trackingNumber ? ` (Tracking: ${order.trackingNumber})` : ""}!`;
     } else if (order.status === "DELIVERED") {
-      statusText = "has been successfully delivered! We hope your recipient cherishes it.";
+      statusText = "has been successfully delivered! We hope you love it.";
     } else {
-      statusText = "has been received at The Fourfold studio.";
+      statusText = `has been received at ${storeName}.`;
     }
 
-    const message = `Hello ${order.customerName},\n\nThis is from The Fourfold Handcrafted Gifting Studio. Your order #${order.orderNumber} ${statusText}\n\nThank you for supporting handcrafting!`;
+    const message = `Hello ${order.customerName},\n\nThis is from ${storeName}. Your order #${order.orderNumber} ${statusText}\n\nThank you for choosing us!`;
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
   };
 
@@ -424,13 +431,13 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Right Controls: Expand All Toggle & Search Input */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
           {/* Expand / Collapse All Details Button */}
           {orders.length > 0 && (
             <button
               type="button"
               onClick={allExpanded ? collapseAll : expandAll}
-              className="px-3 py-1.5 bg-white dark:bg-[#1A1715] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl shrink-0 shadow-2xs text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-white dark:bg-[#1A1715] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl shrink-0 shadow-2xs text-xs font-semibold text-[#181513] dark:text-[#FAF8F5] hover:border-[#181513] dark:hover:border-[#FAF8F5] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               title={allExpanded ? "Collapse all order details" : "Expand all order details"}
             >
               {allExpanded ? (
@@ -448,7 +455,7 @@ export default function AdminOrdersPage() {
           )}
 
           {/* Search Input */}
-          <div className="relative flex-1 sm:w-64">
+          <div className="relative flex-1 sm:w-64 min-w-0">
             <Search className="w-3.5 h-3.5 text-[#786F64] dark:text-[#DCD5CB] absolute left-3 top-3 pointer-events-none" />
             <input
               type="text"
@@ -1639,10 +1646,10 @@ export default function AdminOrdersPage() {
               <div className="flex items-center justify-between pb-4 border-b border-[#DDD5C7] dark:border-[#2E2723]">
                 <div>
                   <h2 className="text-xl font-bold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5]">
-                    THE FOURFOLD
+                    {storeName.toUpperCase()}
                   </h2>
                   <p className="text-xs text-[#786F64] dark:text-[#A89F91]">
-                    Handcrafted Gifting Studio • Bandra West, Mumbai
+                    Studio & Dispatch Management
                   </p>
                 </div>
                 <div className="text-right">

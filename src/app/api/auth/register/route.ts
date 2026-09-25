@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`[THE FOURFOLD AUTH] 💌 Verification code for ${cleanEmail}: ${verificationCode}`);
+    console.log(`[M.E-COMMERCE AUTH] 💌 Verification code for ${cleanEmail}: ${verificationCode}`);
 
     return NextResponse.json({
       success: true,

@@ -219,7 +219,7 @@ export default function CartPage() {
                   type="text"
                   value={couponInput}
                   onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  placeholder="e.g. FOURFOLD10"
+                  placeholder="e.g. SAVE10"
                   className="flex-1 h-10 px-3.5 text-xs uppercase bg-white dark:bg-[#12100E] rounded-xl border border-[#DDD5C7] dark:border-[#2E2925] text-[#181513] dark:text-[#FAF8F5] placeholder:normal-case placeholder:text-[#9A9185] dark:placeholder:text-[#6E665D] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
                 />
                 <button

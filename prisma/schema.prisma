@@ -254,18 +254,25 @@ model Review {
 
 model StudioSetting {
   id                        String   @id @default("default")
-  storeName                 String   @default("The Fourfold")
-  tagline                   String   @default("Handcrafted with Love, Folded to Cherish")
-  storeLocation             String   @default("Studio • Mumbai")
-  instagram                 String   @default("https://instagram.com/thefourfold.official")
-  whatsapp                  String   @default("+919876543210")
-  upiId                     String   @default("thefourfold@oksbi")
-  upiName                   String   @default("The Fourfold Craft Studio")
-  studioAddress             String   @default("Bandra West, Mumbai 400050, Maharashtra, India")
+  storeName                 String   @default("M.E-Commerce")
+  tagline                   String   @default("Minimalist, Modular E-Commerce Platform")
+  storeLocation             String   @default("Studio • Modern Atelier")
+  instagram                 String   @default("https://instagram.com")
+  whatsapp                  String   @default("+1234567890")
+  upiId                     String   @default("merchant@upi")
+  upiName                   String   @default("M.E-Commerce Store")
+  studioAddress             String   @default("Design District, Atelier Studio")
 
   // Modular Branding & Logo (Strictly bounded for headers)
   logoUrl                   String?  @db.Text
   logoWidth                 Int      @default(130)
+
+  // Modular Social, SEO & Favicon / Brand Assets
+  ogTitle                   String?  @db.Text
+  ogDescription             String?  @db.Text
+  ogImageUrl                String?  @db.Text
+  faviconSvg                String?  @db.Text
+  brandAccentColor          String?  @default("#181513")
 
   // Exclusive Theme Presets (Light & Dark supported)
   activeTheme               String   @default("warm-terracotta")
@@ -292,12 +299,12 @@ model StudioSetting {
   aboutDescription          String?  @db.Text
   aboutImage                String?  @db.Text
   aboutStoryBadge           String?  @default("The Atelier")
-  aboutStoryHeading         String?  @default("Behind The Fourfold")
+  aboutStoryHeading         String?  @default("Behind M.E-Commerce")
 
   // Modular Footer
   footerAbout               String?  @db.Text
-  footerDispatchNote        String?  @default("Pan-India Insured Dispatch")
-  footerCopyrightText       String?  @default("Handcrafted with care in Mumbai.")
+  footerDispatchNote        String?  @default("Insured Express Dispatch")
+  footerCopyrightText       String?  @default("Crafted with precision & care.")
   footerSecurityBadges      String?  @default("Secure UPI & Cards • Insured Transit")
 
   // Modular Header & Search
@@ -310,13 +317,13 @@ model StudioSetting {
   craftPrinciples           String?  @db.Text
   principlesBadge           String?  @default("Craft Principles")
   principlesHeading         String?  @default("What Makes Every Gift Special")
-  principlesSubheading      String?  @default("Fourfold Standards")
+  principlesSubheading      String?  @default("Core Quality Standards")
 
   // Modular Instagram Section (Homepage)
-  instagramBadge            String?  @default("Bandra West • Mumbai")
+  instagramBadge            String?  @default("Design Studio")
   instagramHeading          String?  @default("Watch Creations Unfold Daily")
   instagramDescription      String?  @db.Text
-  instagramButtonText       String?  @default("@thefourfold.official")
+  instagramButtonText       String?  @default("@mecommerce")
 
   // Modular Announcement Bar (Storewide Header)
   enableAnnouncement        Boolean  @default(true)

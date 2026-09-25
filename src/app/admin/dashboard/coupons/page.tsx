@@ -755,13 +755,13 @@ export default function AdminCouponsPage() {
                     {/* WhatsApp Customer Share link */}
                     <a
                       href={`https://wa.me/?text=${encodeURIComponent(
-                        `Hello! Here's a special gift from The Fourfold Studio. Use promo code *${
+                        `Hello! Here's a special promo code for you from M.E-Commerce. Use code *${
                           coupon.code
                         }* at checkout to enjoy ${discountLabel}${
                           coupon.minOrderAmount
                             ? ` on orders above ${formatCurrency(coupon.minOrderAmount)}`
                             : ""
-                        }! Handcrafted with love: https://thefourfold.com`
+                        }! Shop now at our store.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

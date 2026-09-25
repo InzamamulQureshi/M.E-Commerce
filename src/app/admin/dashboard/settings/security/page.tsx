@@ -133,7 +133,7 @@ export default function SecuritySettingsPage() {
                 Change Studio Master Passcode
               </h2>
               <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">
-                Logged in as: <strong className="text-[#181513] dark:text-[#FAF8F5]">{adminEmail || "artisan@thefourfold.com"}</strong>
+                Logged in as: <strong className="text-[#181513] dark:text-[#FAF8F5]">{adminEmail || "admin@mecommerce.dev"}</strong>
               </p>
             </div>
           </div>

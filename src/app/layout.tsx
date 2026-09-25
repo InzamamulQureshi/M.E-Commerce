@@ -12,64 +12,76 @@ const ubuntu = Ubuntu({
 
 const rawSiteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://thefourfold.com");
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://mecommerce.dev");
 
-export const metadata: Metadata = {
-  metadataBase: new URL(rawSiteUrl),
-  title: {
-    default: "The Fourfold | Handcrafted Gifting Studio • Mumbai",
-    template: "%s | The Fourfold",
-  },
-  description:
-    "Artisanal explosion boxes, accordion fold keepsake cards, preserved crochet tulips, and bespoke hampers hand-folded with love in Mumbai.",
-  keywords: [
-    "The Fourfold",
-    "Handmade gifts",
-    "Explosion boxes",
-    "Accordion cards",
-    "Crochet tulips",
-    "Handmade albums",
-    "Custom gift hamper",
-    "Wax sealed letters",
-    "Mumbai gifting studio",
-  ],
-  authors: [{ name: "The Fourfold Studio" }],
-  creator: "The Fourfold Studio",
-  publisher: "The Fourfold Studio",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  openGraph: {
-    title: "The Fourfold | Handcrafted Gifting Studio • Mumbai",
-    description: "Every memory deserves to be folded with intent. Personalized gifts crafted by hand in Bandra.",
-    url: "/",
-    siteName: "The Fourfold",
-    locale: "en_IN",
-    type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "The Fourfold | Handcrafted Gifting Studio • Mumbai",
-        type: "image/png",
+export async function generateMetadata(): Promise<Metadata> {
+  let storeName = "M.E-Commerce";
+  let tagline = "Minimalist, Modular E-Commerce Platform";
+  let ogTitle = "";
+  let ogDescription = "";
+  let ogImageUrl = "";
+
+  try {
+    const setting = await db.studioSetting.findUnique({
+      where: { id: "default" },
+      select: {
+        storeName: true,
+        tagline: true,
+        ogTitle: true,
+        ogDescription: true,
+        ogImageUrl: true,
       },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "The Fourfold | Handcrafted Gifting Studio • Mumbai",
-    description: "Every memory deserves to be folded with intent. Personalized gifts crafted by hand in Bandra.",
-    creator: "@thefourfold.official",
-    images: ["/og-image.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    });
+    if (setting) {
+      if (setting.storeName) storeName = setting.storeName;
+      if (setting.tagline) tagline = setting.tagline;
+      if (setting.ogTitle) ogTitle = setting.ogTitle;
+      if (setting.ogDescription) ogDescription = setting.ogDescription;
+      if (setting.ogImageUrl) ogImageUrl = setting.ogImageUrl;
+    }
+  } catch {}
+
+  const metaTitle = ogTitle || `${storeName} | Minimalist, Modular E-Commerce`;
+  const metaDescription = ogDescription || tagline || "Minimalist, modular open-source e-commerce platform.";
+
+  const images = ogImageUrl
+    ? [{ url: ogImageUrl, width: 1200, height: 630, alt: metaTitle }]
+    : [{ url: "/opengraph-image", width: 1200, height: 630, alt: metaTitle }];
+
+  return {
+    metadataBase: new URL(rawSiteUrl),
+    title: {
+      default: metaTitle,
+      template: `%s | ${storeName}`,
+    },
+    description: metaDescription,
+    icons: {
+      icon: [
+        { url: "/api/branding/favicon.svg", type: "image/svg+xml" },
+        { url: "/icon", sizes: "32x32", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: "/",
+      siteName: storeName,
+      type: "website",
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metaTitle,
+      description: metaDescription,
+      images: ogImageUrl ? [ogImageUrl] : ["/twitter-image"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -102,6 +114,7 @@ export default async function RootLayout({
       className={`${ubuntu.variable} font-ubuntu`}
     >
       <head>
+        <link rel="icon" type="image/svg+xml" href="/api/branding/favicon.svg" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}else{document.documentElement.classList.remove("dark")}}catch(e){}})()`,

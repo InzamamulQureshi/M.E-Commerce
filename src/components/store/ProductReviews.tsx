@@ -272,7 +272,7 @@ export function ProductReviews({
                   <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[#A64732] dark:text-[#E07A5F] font-semibold">
                     <span className="flex items-center gap-1.5">
                       <CornerDownRight className="w-3 h-3" />
-                      The Fourfold Team Reply
+                      Store Team Reply
                     </span>
                     {rev.adminRepliedAt && (
                       <span className="text-[10px] text-[#8C8276] dark:text-[#8E8478] font-normal">

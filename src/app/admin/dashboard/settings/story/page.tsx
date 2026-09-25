@@ -25,7 +25,7 @@ export default function StorySettingsPage() {
   const [aboutDescription, setAboutDescription] = useState("");
   const [aboutImage, setAboutImage] = useState("");
   const [aboutStoryBadge, setAboutStoryBadge] = useState("The Atelier");
-  const [aboutStoryHeading, setAboutStoryHeading] = useState("Behind The Fourfold");
+  const [aboutStoryHeading, setAboutStoryHeading] = useState("Behind M.E-Commerce");
 
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
@@ -51,7 +51,7 @@ export default function StorySettingsPage() {
           setAboutDescription(s.aboutDescription || "");
           setAboutImage(s.aboutImage || "");
           setAboutStoryBadge(s.aboutStoryBadge || "The Atelier");
-          setAboutStoryHeading(s.aboutStoryHeading || "Behind The Fourfold");
+          setAboutStoryHeading(s.aboutStoryHeading || "Behind M.E-Commerce");
 
           setWhatsapp(s.whatsapp || "");
           setInstagram(s.instagram || "");
@@ -211,7 +211,7 @@ export default function StorySettingsPage() {
                 type="text"
                 value={aboutStoryHeading}
                 onChange={(e) => setAboutStoryHeading(e.target.value)}
-                placeholder="e.g. Behind The Fourfold"
+                placeholder="e.g. Behind M.E-Commerce"
                 className="w-full px-3.5 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
             </div>
@@ -280,7 +280,7 @@ export default function StorySettingsPage() {
                 type="text"
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
-                placeholder="e.g. https://instagram.com/thefourfold.official"
+                placeholder="e.g. https://instagram.com/mecommerce.official"
                 className="w-full px-3.5 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
             </div>

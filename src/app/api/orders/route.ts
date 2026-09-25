@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     if (dbUser?.status === "BANNED") {
       return NextResponse.json(
-        { error: "Your account is permanently banned from placing orders with The Fourfold studio." },
+        { error: "Your account is permanently banned from placing orders." },
         { status: 403 }
       );
     }

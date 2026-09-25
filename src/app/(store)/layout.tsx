@@ -9,7 +9,7 @@ export default async function StoreLayout({
   children: React.ReactNode;
 }) {
   let brandSettings = {
-    storeName: "The Fourfold",
+    storeName: "M.E-Commerce",
     storeLocation: "Studio • Mumbai",
     logoUrl: null as string | null,
     logoWidth: 130,
@@ -21,11 +21,11 @@ export default async function StoreLayout({
   };
 
   let footerSettings = {
-    storeName: "The Fourfold",
-    tagline: "Handcrafted Gifting Studio • Mumbai, India",
+    storeName: "M.E-Commerce",
+    tagline: "Modern, Minimalist & Modular E-Commerce",
     storeLocation: "Studio • Mumbai",
     footerAbout: null as string | null,
-    instagram: "https://instagram.com/thefourfold.official",
+    instagram: "https://instagram.com/mecommerce.official",
     studioAddress: "Bandra West, Mumbai 400050, Maharashtra, India",
     footerDispatchNote: "Pan-India Insured Dispatch",
     footerCopyrightText: "Handcrafted with care in Mumbai.",
@@ -66,7 +66,7 @@ export default async function StoreLayout({
 
     if (setting) {
       brandSettings = {
-        storeName: setting.storeName || "The Fourfold",
+        storeName: setting.storeName || "M.E-Commerce",
         storeLocation: setting.storeLocation || "Studio • Mumbai",
         logoUrl: setting.logoUrl || null,
         logoWidth: Math.min(160, Math.max(60, setting.logoWidth || 130)),
@@ -79,11 +79,11 @@ export default async function StoreLayout({
         curatedSpotlightsConfig: setting.curatedSpotlightsConfig || null,
       };
       footerSettings = {
-        storeName: setting.storeName || "The Fourfold",
-        tagline: setting.tagline || "Handcrafted Gifting Studio • Mumbai, India",
+        storeName: setting.storeName || "M.E-Commerce",
+        tagline: setting.tagline || "Modern, Minimalist & Modular E-Commerce",
         storeLocation: setting.storeLocation || "Studio • Mumbai",
         footerAbout: setting.footerAbout || null,
-        instagram: setting.instagram || "https://instagram.com/thefourfold.official",
+        instagram: setting.instagram || "https://instagram.com/mecommerce.official",
         studioAddress: setting.studioAddress || "Bandra West, Mumbai 400050, Maharashtra, India",
         footerDispatchNote: setting.footerDispatchNote || "Pan-India Insured Dispatch",
         footerCopyrightText: setting.footerCopyrightText || "Handcrafted with care in Mumbai.",

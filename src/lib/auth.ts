@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { db } from "./db";
 
-const JWT_SECRET = process.env.BETTER_AUTH_SECRET || "thefourfold_fallback_jwt_secret_craft_gifting_2026";
-const COOKIE_NAME = "fourfold_session";
+const JWT_SECRET = process.env.BETTER_AUTH_SECRET || "mecommerce_fallback_jwt_secret_modular_2026";
+const COOKIE_NAME = "mecommerce_session";
 
 export interface AuthSessionUser {
   id: string;

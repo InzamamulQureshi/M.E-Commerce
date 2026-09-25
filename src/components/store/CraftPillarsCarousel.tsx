@@ -22,7 +22,7 @@ export function CraftPillarsCarousel({
   pillars,
   badge = "Craft Principles",
   heading = "What Makes Every Gift Special",
-  subheading = "Fourfold Standards",
+  subheading = "Quality Standards",
 }: CraftPillarsCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
