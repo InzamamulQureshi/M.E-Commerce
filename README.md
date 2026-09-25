@@ -13,7 +13,7 @@ Designed for creators, independent brands, and bespoke studios who want an edito
 - **Native Dark & Light Mode**: Seamless theme switching with persistent user preference.
 - **Mobile-First Experience**: Fluid mobile drawer, sticky bottom navigation, and viewport-safe modals (`100dvh`).
 
-### 2. 100% Modular by Design
+### 2. Modular by Design
 - **Live Branding Hub**: Configure store name, location, logo size, brand accent color, and typography without code changes.
 - **Custom SVG Favicons & Monograms**: Live raw SVG markup editor, SVG data URIs, or automated store monogram generation served at `/api/branding/favicon.svg`.
 - **Dynamic OpenGraph & Social Cards**: Custom OG titles, descriptions, and banner images with live preview in the admin panel.
