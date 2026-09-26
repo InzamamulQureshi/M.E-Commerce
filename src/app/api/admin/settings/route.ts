@@ -63,6 +63,7 @@ export async function GET() {
         ogImageUrl: settingRecord.ogImageUrl || null,
         faviconSvg: settingRecord.faviconSvg || null,
         brandAccentColor: settingRecord.brandAccentColor || "#181513",
+        ogDesignConfig: settingRecord.ogDesignConfig || null,
         activeTheme: settingRecord.activeTheme || "warm-terracotta",
         currencyCode: settingRecord.currencyCode || "INR",
         currencySymbol: settingRecord.currencySymbol || "₹",
@@ -155,6 +156,7 @@ export async function PUT(request: Request) {
         ogImageUrl,
         faviconSvg,
         brandAccentColor,
+        ogDesignConfig,
         activeTheme,
         currencyCode,
         currencySymbol,
@@ -228,6 +230,9 @@ export async function PUT(request: Request) {
       if (ogImageUrl !== undefined) updateData.ogImageUrl = ogImageUrl ? String(ogImageUrl).trim() : null;
       if (faviconSvg !== undefined) updateData.faviconSvg = faviconSvg ? String(faviconSvg).trim() : null;
       if (brandAccentColor !== undefined) updateData.brandAccentColor = brandAccentColor ? String(brandAccentColor).trim() : "#181513";
+      if (ogDesignConfig !== undefined) {
+        updateData.ogDesignConfig = ogDesignConfig ? (typeof ogDesignConfig === "string" ? ogDesignConfig : JSON.stringify(ogDesignConfig)) : null;
+      }
 
       // Theme Preset
       if (activeTheme !== undefined) {

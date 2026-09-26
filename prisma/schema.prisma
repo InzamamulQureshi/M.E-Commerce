@@ -273,6 +273,7 @@ model StudioSetting {
   ogImageUrl                String?  @db.Text
   faviconSvg                String?  @db.Text
   brandAccentColor          String?  @default("#181513")
+  ogDesignConfig            String?  @db.Text
 
   // Exclusive Theme Presets (Light & Dark supported)
   activeTheme               String   @default("warm-terracotta")

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { SettingsHeader } from "@/components/admin/SettingsHeader";
 import {
@@ -18,7 +18,21 @@ import {
   Monitor,
   Smartphone,
   Trash2,
+  Layers,
+  Layout,
+  Sliders,
+  CheckSquare,
+  Square,
 } from "lucide-react";
+import {
+  generateOgBillboardSvg,
+  DEFAULT_OG_CONFIG,
+  OgDesignConfig,
+  OG_LAYOUT_PRESETS,
+  OG_THEME_PALETTES,
+  OgLayoutPreset,
+  OgThemeBackdrop,
+} from "@/lib/og-generator";
 
 const SVG_PRESETS = [
   {
@@ -63,11 +77,14 @@ const SVG_PRESETS = [
 
 export default function BrandingSettingsPage() {
   const [storeName, setStoreName] = useState("M.E-Commerce");
+  const [tagline, setTagline] = useState("Minimalist, Modular E-Commerce Platform");
+  const [storeLocation, setStoreLocation] = useState("Studio • Modern Atelier");
   const [ogTitle, setOgTitle] = useState("");
   const [ogDescription, setOgDescription] = useState("");
   const [ogImageUrl, setOgImageUrl] = useState("");
   const [faviconSvg, setFaviconSvg] = useState("");
   const [brandAccentColor, setBrandAccentColor] = useState("#E07A5F");
+  const [ogConfig, setOgConfig] = useState<OgDesignConfig>(DEFAULT_OG_CONFIG);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -82,11 +99,22 @@ export default function BrandingSettingsPage() {
         if (data?.settings) {
           const s = data.settings;
           setStoreName(s.storeName || "M.E-Commerce");
+          setTagline(s.tagline || "Minimalist, Modular E-Commerce Platform");
+          setStoreLocation(s.storeLocation || "Studio • Modern Atelier");
           setOgTitle(s.ogTitle || "");
           setOgDescription(s.ogDescription || "");
           setOgImageUrl(s.ogImageUrl || "");
           setFaviconSvg(s.faviconSvg || "");
           setBrandAccentColor(s.brandAccentColor || "#E07A5F");
+          if (s.ogDesignConfig) {
+            try {
+              const parsed =
+                typeof s.ogDesignConfig === "string"
+                  ? JSON.parse(s.ogDesignConfig)
+                  : s.ogDesignConfig;
+              setOgConfig({ ...DEFAULT_OG_CONFIG, ...parsed });
+            } catch {}
+          }
         }
       })
       .catch(() => setError("Failed to load branding assets"))
@@ -110,6 +138,7 @@ export default function BrandingSettingsPage() {
             ogImageUrl: ogImageUrl ? ogImageUrl.trim() : null,
             faviconSvg: faviconSvg ? faviconSvg.trim() : null,
             brandAccentColor: brandAccentColor ? brandAccentColor.trim() : "#181513",
+            ogDesignConfig: JSON.stringify(ogConfig),
           },
         }),
       });
@@ -119,7 +148,7 @@ export default function BrandingSettingsPage() {
         throw new Error(data.error || "Failed to save branding assets");
       }
 
-      setSuccess("OpenGraph metadata, SVG favicon and brand assets updated!");
+      setSuccess("OpenGraph metadata, billboard design & brand assets updated!");
     } catch (err: any) {
       setError(err.message || "Failed to save branding");
     } finally {
@@ -129,13 +158,26 @@ export default function BrandingSettingsPage() {
 
   const previewTitle = ogTitle || `${storeName} | Minimalist, Modular E-Commerce`;
   const previewDescription =
-    ogDescription || "Minimalist, modular, open-source e-commerce platform crafted with precision & care.";
+    ogDescription || tagline || "Minimalist, modular, open-source e-commerce platform crafted with precision & care.";
+
+  // Generate live billboard SVG on every change in real-time
+  const liveSvg = useMemo(() => {
+    return generateOgBillboardSvg({
+      config: ogConfig,
+      storeName,
+      tagline,
+      storeLocation,
+      accentColor: brandAccentColor,
+      title: previewTitle,
+      subtitle: previewDescription,
+    });
+  }, [ogConfig, storeName, tagline, storeLocation, brandAccentColor, previewTitle, previewDescription]);
 
   return (
     <div className="space-y-6 sm:space-y-8">
       <SettingsHeader
         title="SEO, OpenGraph & SVG Favicon"
-        subtitle="Customize your store's social share cards (Facebook, Twitter, iMessage, LinkedIn), dynamic OpenGraph billboards, and SVG favicon icon without touching code."
+        subtitle="Customize your store's social share cards (Facebook, Twitter, WhatsApp, Discord), dynamic OpenGraph billboard design, and SVG favicon icon with live real-time preview."
         icon={Share2}
         badge="SEO & Brand Assets"
         actions={
@@ -239,15 +281,15 @@ export default function BrandingSettingsPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5]">
-                  Custom OpenGraph Image URL (Optional)
+                  Custom OpenGraph Image URL (Optional Bypass)
                 </label>
                 {ogImageUrl && (
                   <button
                     type="button"
                     onClick={() => setOgImageUrl("")}
-                    className="text-[10px] text-red-600 hover:underline"
+                    className="text-[10px] text-red-600 hover:underline cursor-pointer"
                   >
-                    Use Dynamic Generated Card
+                    Clear Custom URL & Use Modular Billboard
                   </button>
                 )}
               </div>
@@ -259,7 +301,7 @@ export default function BrandingSettingsPage() {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
               />
               <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">
-                Leave empty to automatically use the high-performance Next.js dynamic OpenGraph billboard with your store name and live styling.
+                Leave empty to automatically generate and serve the high-performance dynamic OpenGraph PNG billboard configured below.
               </p>
             </div>
 
@@ -284,13 +326,225 @@ export default function BrandingSettingsPage() {
                   />
                 </div>
                 <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] basis-full sm:basis-auto">
-                  Used for dynamic OG badges, icon borders, and social card highlights.
+                  Used for dynamic OG badges, icon borders, glow aura, and social card highlights.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Section 2: SVG Favicon & Tab Icon Configuration */}
+          {/* Section 2: Modular OpenGraph Billboard Designer */}
+          <div className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD4] dark:border-[#2A231F]">
+              <div className="flex items-center gap-2.5">
+                <Layout className="w-4 h-4 text-[#A64732] dark:text-[#E07A5F]" />
+                <h2 className="text-sm font-bold text-[#181513] dark:text-[#FAF8F5] uppercase tracking-wider">
+                  Modular Billboard Studio & Designer
+                </h2>
+              </div>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#A64732]/10 text-[#A64732] dark:text-[#E07A5F] dark:bg-[#E07A5F]/10">
+                Live Dynamic Engine
+              </span>
+            </div>
+
+            {/* 1. Layout Preset Selection */}
+            <div className="space-y-2.5">
+              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] flex items-center justify-between">
+                <span>1. Composition Layout Preset</span>
+                <span className="text-[10px] font-normal text-[#786F64] dark:text-[#A89F91]">
+                  Choose architectural structure
+                </span>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {OG_LAYOUT_PRESETS.map((preset) => {
+                  const isActive = ogConfig.layoutPreset === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => setOgConfig((prev) => ({ ...prev, layoutPreset: preset.id }))}
+                      className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                        isActive
+                          ? "border-[#A64732] bg-[#A64732]/5 dark:bg-[#E07A5F]/10 dark:border-[#E07A5F] shadow-xs"
+                          : "border-[#E5DFD4] dark:border-[#2A231F] bg-white dark:bg-[#1C1815] hover:border-[#D0C5B4] dark:hover:border-[#38302A]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5]">
+                          {preset.label}
+                        </span>
+                        {isActive && (
+                          <span className="w-2 h-2 rounded-full bg-[#A64732] dark:bg-[#E07A5F]" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] leading-relaxed">
+                        {preset.desc}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Theme Backdrop Selection */}
+            <div className="space-y-2.5">
+              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] flex items-center justify-between">
+                <span>2. Atmosphere & Backdrop Palette</span>
+                <span className="text-[10px] font-normal text-[#786F64] dark:text-[#A89F91]">
+                  Background gradient mood
+                </span>
+              </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(Object.keys(OG_THEME_PALETTES) as OgThemeBackdrop[]).map((themeKey) => {
+                  const theme = OG_THEME_PALETTES[themeKey];
+                  const isActive = ogConfig.themeBackdrop === themeKey;
+                  return (
+                    <button
+                      key={themeKey}
+                      type="button"
+                      onClick={() => setOgConfig((prev) => ({ ...prev, themeBackdrop: themeKey }))}
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-colors cursor-pointer ${
+                        isActive
+                          ? "border-[#A64732] dark:border-[#E07A5F] bg-[#FAF8F5] dark:bg-[#201B18] ring-1 ring-[#A64732]"
+                          : "border-[#E5DFD4] dark:border-[#2A231F] bg-white dark:bg-[#1C1815] hover:border-[#D0C5B4]"
+                      }`}
+                    >
+                      <div
+                        style={{
+                          background: `linear-gradient(135deg, ${theme.bgStart} 0%, ${theme.bgEnd} 100%)`,
+                          borderColor: theme.borderStart,
+                        }}
+                        className="w-5 h-5 rounded-lg border shrink-0 shadow-2xs"
+                      />
+                      <span className="text-[11px] font-semibold text-[#181513] dark:text-[#FAF8F5] truncate">
+                        {theme.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Text & Badges Content Customization */}
+            <div className="space-y-3 pt-2 border-t border-[#E5DFD4] dark:border-[#2A231F]">
+              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5]">
+                3. Eyebrow, Badges & Watermark Text
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-[#786F64] dark:text-[#A89F91]">
+                    Top Eyebrow Badge Text
+                  </label>
+                  <input
+                    type="text"
+                    value={ogConfig.eyebrowText}
+                    onChange={(e) =>
+                      setOgConfig((prev) => ({ ...prev, eyebrowText: e.target.value }))
+                    }
+                    placeholder="e.g. HANDCRAFTED ATELIER"
+                    className="w-full px-3 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-[#786F64] dark:text-[#A89F91]">
+                    Domain Watermark (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={ogConfig.domainWatermark || ""}
+                    onChange={(e) =>
+                      setOgConfig((prev) => ({ ...prev, domainWatermark: e.target.value }))
+                    }
+                    placeholder="e.g. thefourfold.com"
+                    className="w-full px-3 py-2 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-xs outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-[#786F64] dark:text-[#A89F91]">
+                  Bottom 3 Craft Highlight Badges
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={ogConfig.badge1}
+                    onChange={(e) =>
+                      setOgConfig((prev) => ({ ...prev, badge1: e.target.value }))
+                    }
+                    placeholder="Badge 1 (e.g. MODULAR ARCHITECTURE)"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-[11px] outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                  />
+                  <input
+                    type="text"
+                    value={ogConfig.badge2}
+                    onChange={(e) =>
+                      setOgConfig((prev) => ({ ...prev, badge2: e.target.value }))
+                    }
+                    placeholder="Badge 2 (e.g. MINIMALIST STOREFRONT)"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-[11px] outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                  />
+                  <input
+                    type="text"
+                    value={ogConfig.badge3}
+                    onChange={(e) =>
+                      setOgConfig((prev) => ({ ...prev, badge3: e.target.value }))
+                    }
+                    placeholder="Badge 3 (e.g. HANDCRAFTED ATELIER)"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] text-[11px] outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Visual Element Toggles */}
+            <div className="space-y-2 pt-2 border-t border-[#E5DFD4] dark:border-[#2A231F]">
+              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5]">
+                4. Visual Element Toggles
+              </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {[
+                  { key: "showMonogram", label: "Studio Monogram" },
+                  { key: "showAccentGlow", label: "Accent Glow Aura" },
+                  { key: "showOuterBorder", label: "Outer Frame Border" },
+                  { key: "showBadges", label: "Craft Badges Row" },
+                  { key: "showWatermark", label: "Domain Watermark" },
+                ].map((item) => {
+                  const isChecked = ogConfig[item.key as keyof OgDesignConfig] as boolean;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() =>
+                        setOgConfig((prev) => ({
+                          ...prev,
+                          [item.key]: !isChecked,
+                        }))
+                      }
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-colors cursor-pointer ${
+                        isChecked
+                          ? "border-[#A64732] bg-[#A64732]/5 dark:border-[#E07A5F] dark:bg-[#E07A5F]/10 text-[#181513] dark:text-[#FAF8F5]"
+                          : "border-[#E5DFD4] dark:border-[#2A231F] bg-white dark:bg-[#1C1815] text-[#786F64] dark:text-[#A89F91]"
+                      }`}
+                    >
+                      {isChecked ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F] shrink-0" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5 text-[#A89F91] shrink-0" />
+                      )}
+                      <span className="text-[11px] font-semibold truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: SVG Favicon & Tab Icon Configuration */}
           <div className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-[#E5DFD4] dark:border-[#2A231F]">
               <div className="flex items-center gap-2.5">
@@ -311,28 +565,56 @@ export default function BrandingSettingsPage() {
               )}
             </div>
 
-            {/* Presets */}
+            <p className="text-xs text-[#786F64] dark:text-[#A89F91] leading-relaxed">
+              Browser tab icons in modern SVG format scale infinitely from high-DPI desktop Retina screens down to phone tabs without blurring. Choose from crafted studio presets or paste your own raw SVG below.
+            </p>
+
+            {/* Presets Grid */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] block">
-                Quick Apply Preset SVG Icons
+              <label className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F]" />
+                <span>Quick-Apply Curated Studio Presets</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {SVG_PRESETS.map((preset) => (
-                  <button
-                    key={preset.name}
-                    type="button"
-                    onClick={() => setFaviconSvg(preset.svg)}
-                    className="p-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] hover:border-[#A64732] dark:hover:border-[#E07A5F] transition-all flex flex-col items-center text-center gap-2 cursor-pointer group"
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform"
-                      dangerouslySetInnerHTML={{ __html: preset.svg }}
-                    />
-                    <span className="text-[10px] font-semibold text-[#181513] dark:text-[#FAF8F5] leading-tight">
-                      {preset.name}
-                    </span>
-                  </button>
-                ))}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {SVG_PRESETS.map((preset) => {
+                  const isCurrent = faviconSvg === preset.svg;
+                  return (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => {
+                        setFaviconSvg(preset.svg);
+                        setSvgPreviewError(false);
+                      }}
+                      className={`text-left p-3 rounded-xl border transition-all flex items-start gap-3 cursor-pointer ${
+                        isCurrent
+                          ? "border-[#A64732] bg-[#A64732]/5 dark:bg-[#E07A5F]/10 dark:border-[#E07A5F] shadow-xs"
+                          : "border-[#E5DFD4] dark:border-[#2A231F] bg-white dark:bg-[#1C1815] hover:border-[#D0C5B4] dark:hover:border-[#38302A]"
+                      }`}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center p-1 bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] [&>svg]:w-full [&>svg]:h-full"
+                        dangerouslySetInnerHTML={{ __html: preset.svg }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] truncate">
+                            {preset.name}
+                          </span>
+                          {isCurrent && (
+                            <span className="text-[10px] text-[#A64732] dark:text-[#E07A5F] font-semibold">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] line-clamp-1 mt-0.5">
+                          {preset.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -342,34 +624,23 @@ export default function BrandingSettingsPage() {
                 Raw SVG Code Markup
               </label>
               <textarea
-                rows={6}
+                rows={5}
                 value={faviconSvg}
                 onChange={(e) => {
                   setFaviconSvg(e.target.value);
                   setSvgPreviewError(false);
                 }}
-                placeholder="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>...</svg>"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] font-mono text-[11px] leading-relaxed outline-hidden focus:ring-1 focus:ring-[#A64732]"
+                placeholder={`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">\n  <rect width="32" height="32" rx="8" fill="#181513"/>\n  ...\n</svg>`}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] text-[#181513] dark:text-[#FAF8F5] font-mono text-[11px] outline-hidden focus:ring-1 focus:ring-[#A64732] resize-y"
               />
               <p className="text-[11px] text-[#786F64] dark:text-[#A89F91]">
-                Paste your own raw `<svg>...</svg>` markup here. It is served instantly via <code>/api/branding/favicon.svg</code> with correct <code>image/svg+xml</code> headers.
+                Paste your own raw `&lt;svg&gt;...&lt;/svg&gt;` markup here. It is served instantly via <code>/api/branding/favicon.svg</code> with correct <code>image/svg+xml</code> headers.
               </p>
             </div>
           </div>
-
-          <div className="flex items-center justify-end">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#A64732] hover:bg-[#8D3825] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
-            >
-              {saving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              <span>{saving ? "Saving Changes..." : "Save Branding & Favicon"}</span>
-            </button>
-          </div>
         </form>
 
-        {/* Live Visual Previews (5 Cols) */}
+        {/* Live Visual Simulation (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* 1. Browser Tab Simulation Preview */}
           <div className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-5 shadow-xs space-y-4">
@@ -408,70 +679,47 @@ export default function BrandingSettingsPage() {
             </div>
           </div>
 
-          {/* 2. Social Card (OpenGraph) Preview */}
+          {/* 2. Social Card (OpenGraph) Real-Time Preview */}
           <div className="bg-[#FAF8F5] dark:bg-[#151210] border border-[#E5DFD4] dark:border-[#2A231F] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] flex items-center gap-1.5">
                 <Monitor className="w-3.5 h-3.5 text-[#A64732] dark:text-[#E07A5F]" />
-                <span>Social Feed Card Preview</span>
+                <span>Live Billboard Card Preview</span>
               </span>
-              <span className="text-[10px] text-[#786F64] dark:text-[#A89F91]">1200 × 630</span>
+              <span className="text-[10px] text-[#786F64] dark:text-[#A89F91]">1200 × 630 PNG</span>
             </div>
 
             <div className="rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white dark:bg-[#1C1815] overflow-hidden shadow-sm">
-              {/* Image banner */}
-              <div className="relative aspect-[1200/630] w-full bg-[#181513] p-3.5 sm:p-5 flex flex-col justify-between overflow-hidden">
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "-40px",
-                    right: "-40px",
-                    width: "160px",
-                    height: "160px",
-                    borderRadius: "50%",
-                    background: `radial-gradient(circle, ${brandAccentColor}44 0%, rgba(24,21,19,0) 70%)`,
-                  }}
-                />
+              {/* Actual Live SVG Billboard Rendering matching what scrapers receive */}
+              <div
+                className="relative aspect-[1200/630] w-full overflow-hidden [&>svg]:w-full [&>svg]:h-full shadow-inner select-none"
+                dangerouslySetInnerHTML={{ __html: liveSvg }}
+              />
 
-                <div className="flex items-center gap-1.5 z-10">
-                  <div style={{ backgroundColor: brandAccentColor }} className="w-2 h-2 rounded-full" />
-                  <span
-                    style={{ color: brandAccentColor }}
-                    className="text-[9px] uppercase font-bold tracking-widest"
-                  >
-                    MODULAR E-COMMERCE
-                  </span>
-                </div>
-
-                <div className="space-y-1 z-10">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-tight line-clamp-1">
-                    {previewTitle}
-                  </h3>
-                  <p className="text-[10px] text-stone-300 line-clamp-2 leading-relaxed">
-                    {previewDescription}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-stone-800 pt-2 text-[8px] text-stone-400 uppercase tracking-wider z-10">
-                  <span>Open Source Platform</span>
-                  <span style={{ color: brandAccentColor }} className="font-bold">
-                    {storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce"}.com
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Meta Footer */}
-              <div className="p-3 bg-[#FAF8F5] dark:bg-[#171412] border-t border-[#E5DFD4] dark:border-[#2A231F] space-y-0.5">
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-[#786F64] dark:text-[#A89F91]">
-                  {storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce"}.com
+              {/* Card Meta Footer (Discord / WhatsApp / Twitter feed simulation) */}
+              <div className="p-3.5 bg-[#FAF8F5] dark:bg-[#171412] border-t border-[#E5DFD4] dark:border-[#2A231F] space-y-1">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#786F64] dark:text-[#A89F91]">
+                  {(ogConfig.domainWatermark || storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce") + ".com"}
                 </span>
                 <p className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] line-clamp-1">
                   {previewTitle}
                 </p>
-                <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] line-clamp-1">
+                <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] line-clamp-2 leading-relaxed">
                   {previewDescription}
                 </p>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 text-[11px]">
+              <span className="text-[#786F64] dark:text-[#A89F91]">Format: Raster PNG (Discord/WhatsApp ready)</span>
+              <Link
+                href="/api/branding/og-image.png"
+                target="_blank"
+                className="text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold inline-flex items-center gap-1"
+              >
+                <span>Inspect Server PNG</span>
+                <ExternalLink className="w-3 h-3" />
+              </Link>
             </div>
           </div>
         </div>

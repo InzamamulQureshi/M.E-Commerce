@@ -37,6 +37,7 @@ export async function GET() {
         ogImageUrl: setting?.ogImageUrl || null,
         faviconSvg: setting?.faviconSvg || null,
         brandAccentColor: setting?.brandAccentColor || "#181513",
+        ogDesignConfig: setting?.ogDesignConfig || null,
 
         // Exclusive Theme Preset
         activeTheme: setting?.activeTheme || "warm-terracotta",
