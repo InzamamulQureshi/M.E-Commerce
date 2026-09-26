@@ -412,26 +412,21 @@ export function AdminSidebar({ initialStoreName }: { initialStoreName?: string }
             </span>
           </Link>
 
-          {/* 5. Mobile Drawer Menu Toggle */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className={`flex flex-col items-center justify-center h-full py-1 text-center transition-colors cursor-pointer ${
-              mobileOpen ||
-              (pathname.startsWith("/admin/dashboard/settings") ||
-                pathname.startsWith("/admin/dashboard/categories") ||
-                pathname.startsWith("/admin/dashboard/coupons") ||
-                pathname.startsWith("/admin/dashboard/reviews") ||
-                pathname.startsWith("/admin/dashboard/products"))
+          {/* 5. Studio Settings Navigation */}
+          <Link
+            href="/admin/dashboard/settings"
+            onClick={() => setMobileOpen(false)}
+            className={`flex flex-col items-center justify-center h-full py-1 text-center transition-colors ${
+              pathname.startsWith("/admin/dashboard/settings")
                 ? "text-[#A64732] dark:text-[#E07A5F] font-bold"
                 : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"
             }`}
           >
-            <Menu className="w-5 h-5 shrink-0" />
-            <span className="text-[10px] tracking-tight leading-tight mt-1 whitespace-nowrap">
-              Menu
+            <Settings className="w-5 h-5 shrink-0" />
+            <span className="text-[9.5px] sm:text-[10px] tracking-tight leading-tight mt-1 text-center truncate max-w-full px-0.5">
+              Studio Settings
             </span>
-          </button>
+          </Link>
         </div>
       </nav>
     </>

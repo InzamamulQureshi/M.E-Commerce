@@ -156,14 +156,25 @@ export default function BrandingSettingsPage() {
             <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{success}</span>
           </div>
-          <Link
-            href="/api/branding/favicon.svg"
-            target="_blank"
-            className="underline font-semibold hover:opacity-80 inline-flex items-center gap-1 shrink-0"
-          >
-            <span>Inspect Favicon SVG</span>
-            <ExternalLink className="w-3 h-3" />
-          </Link>
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            <Link
+              href="/api/branding/og-image.png"
+              target="_blank"
+              className="underline font-semibold hover:opacity-80 inline-flex items-center gap-1"
+            >
+              <span>Preview Live OG Card</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+            <span className="text-[#A89F91] hidden sm:inline">•</span>
+            <Link
+              href="/api/branding/favicon.svg"
+              target="_blank"
+              className="underline font-semibold hover:opacity-80 inline-flex items-center gap-1"
+            >
+              <span>Inspect Favicon SVG</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
       )}
 

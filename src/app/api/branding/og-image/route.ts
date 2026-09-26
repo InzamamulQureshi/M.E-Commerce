@@ -1,35 +1,38 @@
 import { NextResponse } from "next/server";
+import { Resvg } from "@resvg/resvg-js";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const wantSvg = searchParams.get("format") === "svg";
+
+  let storeName = "M.E-Commerce";
+  let tagline = "Minimalist, Modular E-Commerce Platform";
+  let location = "Modern Atelier";
+  let accentColor = "#E07A5F";
+  let ogTitle = "";
+  let ogDescription = "";
+
   try {
-    let storeName = "M.E-Commerce";
-    let tagline = "Minimalist, Modular E-Commerce Platform";
-    let location = "Modern Atelier";
-    let accentColor = "#E07A5F";
-    let ogTitle = "";
-    let ogDescription = "";
+    const s = await db.studioSetting.findUnique({ where: { id: "default" } });
+    if (s) {
+      if (s.storeName) storeName = s.storeName;
+      if (s.tagline) tagline = s.tagline;
+      if (s.storeLocation) location = s.storeLocation;
+      if (s.brandAccentColor) accentColor = s.brandAccentColor;
+      if (s.ogTitle) ogTitle = s.ogTitle;
+      if (s.ogDescription) ogDescription = s.ogDescription;
+    }
+  } catch {}
 
-    try {
-      const s = await db.studioSetting.findUnique({ where: { id: "default" } });
-      if (s) {
-        if (s.storeName) storeName = s.storeName;
-        if (s.tagline) tagline = s.tagline;
-        if (s.storeLocation) location = s.storeLocation;
-        if (s.brandAccentColor) accentColor = s.brandAccentColor;
-        if (s.ogTitle) ogTitle = s.ogTitle;
-        if (s.ogDescription) ogDescription = s.ogDescription;
-      }
-    } catch {}
+  const displayTitle = (ogTitle || storeName).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const displaySubtitle = (ogDescription || tagline).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const displayLocation = location.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const domain = (storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce") + ".com";
 
-    const displayTitle = (ogTitle || storeName).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const displaySubtitle = (ogDescription || tagline).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const displayLocation = location.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const domain = (storeName.toLowerCase().replace(/[^a-z0-9]/g, "") || "mecommerce") + ".com";
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <radialGradient id="accentGlow" cx="85%" cy="15%" r="65%">
       <stop offset="0%" stop-color="${accentColor}" stop-opacity="0.28" />
@@ -57,21 +60,21 @@ export async function GET() {
   <!-- Studio Location & Branding Badge -->
   <g transform="translate(80, 85)">
     <circle cx="8" cy="8" r="7" fill="${accentColor}" />
-    <text x="28" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="4" fill="${accentColor}" text-transform="uppercase">
-      ${displayLocation}
+    <text x="28" y="14" font-family="sans-serif" font-size="16" font-weight="700" letter-spacing="4" fill="${accentColor}">
+      ${displayLocation.toUpperCase()}
     </text>
   </g>
 
   <!-- Main Title -->
   <g transform="translate(80, 230)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="56" font-weight="900" fill="#FAF8F5" letter-spacing="1">
+    <text x="0" y="0" font-family="sans-serif" font-size="56" font-weight="900" fill="#FAF8F5" letter-spacing="1">
       ${displayTitle}
     </text>
   </g>
 
   <!-- Subtitle / Narrative Description -->
   <g transform="translate(80, 310)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="400" fill="#D1C9BE" letter-spacing="0.5">
+    <text x="0" y="0" font-family="sans-serif" font-size="24" font-weight="400" fill="#D1C9BE" letter-spacing="0.5">
       ${displaySubtitle}
     </text>
   </g>
@@ -81,40 +84,61 @@ export async function GET() {
 
   <!-- Bottom Badges: Architecture, Studio, Craft -->
   <g transform="translate(80, 525)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91" text-transform="uppercase">
+    <text x="0" y="0" font-family="sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91">
       MODULAR ARCHITECTURE
     </text>
     <circle cx="270" cy="-5" r="3" fill="#665E54" />
-    <text x="290" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91" text-transform="uppercase">
+    <text x="290" y="0" font-family="sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91">
       MINIMALIST STOREFRONT
     </text>
     <circle cx="585" cy="-5" r="3" fill="#665E54" />
-    <text x="605" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91" text-transform="uppercase">
+    <text x="605" y="0" font-family="sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#A89F91">
       HANDCRAFTED ATELIER
     </text>
   </g>
 
   <!-- Bottom Domain Label -->
   <g transform="translate(1120, 525)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="800" letter-spacing="2" fill="${accentColor}" text-anchor="end" text-transform="uppercase">
-      ${domain}
+    <text x="0" y="0" font-family="sans-serif" font-size="16" font-weight="800" letter-spacing="2" fill="${accentColor}" text-anchor="end">
+      ${domain.toUpperCase()}
     </text>
   </g>
 </svg>`;
 
+  if (wantSvg) {
     return new NextResponse(svg, {
       headers: {
         "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       },
     });
-  } catch (error) {
-    const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
-  <rect width="1200" height="630" fill="#181513" />
-  <text x="600" y="315" font-family="sans-serif" font-size="48" font-weight="bold" fill="#FAF8F5" text-anchor="middle">M.E-Commerce Studio</text>
-</svg>`;
-    return new NextResponse(fallbackSvg, {
-      headers: { "Content-Type": "image/svg+xml" },
+  }
+
+  try {
+    const resvg = new Resvg(svg, {
+      fitTo: { mode: "width", value: 1200 },
+      font: {
+        loadSystemFonts: true,
+        defaultFontFamily: "sans-serif",
+      },
+    });
+    const pngBuffer = resvg.render().asPng();
+
+    return new Response(new Uint8Array(pngBuffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/png",
+        "Content-Length": pngBuffer.byteLength.toString(),
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      },
+    });
+  } catch (renderError) {
+    console.error("Resvg rendering error:", renderError);
+    return new NextResponse(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "no-cache",
+      },
     });
   }
 }

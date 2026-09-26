@@ -45,8 +45,10 @@ export async function generateMetadata(): Promise<Metadata> {
   let siteUrl = rawSiteUrl;
   try {
     const headerList = await headers();
-    const host = headerList.get("x-forwarded-host") || headerList.get("host");
-    const proto = headerList.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+    const rawHost = headerList.get("x-forwarded-host") || headerList.get("host");
+    const host = rawHost ? rawHost.split(",")[0].trim() : null;
+    const rawProto = headerList.get("x-forwarded-proto");
+    const proto = rawProto ? rawProto.split(",")[0].trim() : (host?.includes("localhost") ? "http" : "https");
     if (host) {
       siteUrl = `${proto}://${host}`;
     }
@@ -55,14 +57,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const metaTitle = ogTitle || `${storeName} | Minimalist, Modular E-Commerce`;
   const metaDescription = ogDescription || tagline || "Minimalist, modular open-source e-commerce platform.";
 
-  const ogImageFullUrl = ogImageUrl || `${siteUrl}/api/branding/og-image`;
+  const ogImageFullUrl = ogImageUrl || `${siteUrl}/api/branding/og-image.png`;
 
   const images = [
     {
       url: ogImageFullUrl,
+      secureUrl: ogImageFullUrl,
       width: 1200,
       height: 630,
       alt: metaTitle,
+      type: "image/png",
     },
   ];
 
@@ -76,9 +80,9 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: [
         { url: "/api/branding/favicon.svg", type: "image/svg+xml" },
-        { url: "/icon", sizes: "32x32", type: "image/png" },
+        { url: "/api/branding/icon", sizes: "32x32", type: "image/png" },
       ],
-      apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+      apple: [{ url: "/api/branding/apple-icon", sizes: "180x180", type: "image/png" }],
     },
     openGraph: {
       title: metaTitle,
