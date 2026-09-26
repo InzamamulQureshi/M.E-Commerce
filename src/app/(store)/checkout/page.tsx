@@ -39,7 +39,11 @@ export default function CheckoutPage() {
   const [postalCode, setPostalCode] = useState("");
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null);
   const [orderNotes, setOrderNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"UPI_QR" | "COD" | "ONLINE_CARD">("UPI_QR");
+  const [paymentMethod, setPaymentMethod] = useState<"RAZORPAY" | "UPI_QR" | "COD" | "ONLINE_CARD">("UPI_QR");
+  const [razorpayConfig, setRazorpayConfig] = useState<{ enabled: boolean; keyId?: string | null }>({
+    enabled: false,
+    keyId: null,
+  });
   const [paymentRef, setPaymentRef] = useState("");
   const [studioSettings, setStudioSettings] = useState({
     upiId: process.env.NEXT_PUBLIC_UPI_ID || "mecommerce@oksbi",
@@ -66,6 +70,18 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     checkUser();
+
+    // Check payment gateway readiness
+    fetch("/api/payments/config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.razorpay?.enabled) {
+          setRazorpayConfig(data.razorpay);
+          setPaymentMethod("RAZORPAY");
+        }
+      })
+      .catch(() => {});
+
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
@@ -85,12 +101,11 @@ export default function CheckoutPage() {
             currencySymbol: s.currencySymbol || "₹",
           });
 
-          // Select first available payment method
-          if (upi) {
-            setPaymentMethod("UPI_QR");
-          } else if (cod) {
-            setPaymentMethod("COD");
-          }
+          // If Razorpay is not active, fallback smoothly to UPI or COD
+          setPaymentMethod((prev) => {
+            if (prev === "RAZORPAY") return prev;
+            return upi ? "UPI_QR" : "COD";
+          });
         }
       })
       .catch(() => {});
@@ -231,6 +246,21 @@ export default function CheckoutPage() {
     }
   };
 
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== "undefined" && (window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
@@ -285,13 +315,96 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         setErrorMessage(data.error || "Failed to place order.");
-      } else {
-        clearCart();
-        router.push(`/order-confirmation/${data.order.id}`);
+        setIsSubmitting(false);
+        return;
       }
+
+      // If Razorpay gateway is selected, trigger the interactive Razorpay checkout modal
+      if (paymentMethod === "RAZORPAY") {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          setErrorMessage("Failed to load Razorpay checkout script. Please check your network or try UPI / COD.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const rzpOrderRes = await fetch("/api/payments/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: data.order.id }),
+        });
+
+        const rzpOrderData = await rzpOrderRes.json();
+        if (!rzpOrderRes.ok || !rzpOrderData.success) {
+          setErrorMessage(rzpOrderData.error || "Failed to initialize Razorpay checkout session.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const options = {
+          key: rzpOrderData.keyId,
+          amount: rzpOrderData.amount,
+          currency: rzpOrderData.currency || "INR",
+          name: studioSettings.upiName || "M.E-Commerce Studio",
+          description: `Order #${rzpOrderData.orderNumber}`,
+          order_id: rzpOrderData.razorpayOrderId,
+          prefill: {
+            name: name.trim(),
+            email: email.trim(),
+            contact: phone.trim(),
+          },
+          theme: {
+            color: "#181513",
+          },
+          handler: async function (response: any) {
+            try {
+              setIsSubmitting(true);
+              const verifyRes = await fetch("/api/payments/razorpay/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  orderId: data.order.id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (verifyRes.ok && verifyData.success) {
+                clearCart();
+                router.push(`/order-confirmation/${data.order.id}`);
+              } else {
+                setErrorMessage(verifyData.error || "Payment signature verification failed. Please contact support.");
+                setIsSubmitting(false);
+              }
+            } catch {
+              setErrorMessage("Network error during payment verification.");
+              setIsSubmitting(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setIsSubmitting(false);
+              setErrorMessage("Razorpay modal closed. You can retry payment or choose another payment mode.");
+            },
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on("payment.failed", function (response: any) {
+          setIsSubmitting(false);
+          setErrorMessage(`Payment failed: ${response?.error?.description || "Transaction declined."}`);
+        });
+        rzp.open();
+        return;
+      }
+
+      // Offline/direct methods (UPI_QR, COD)
+      clearCart();
+      router.push(`/order-confirmation/${data.order.id}`);
     } catch {
       setErrorMessage("Network error. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -693,6 +806,57 @@ export default function CheckoutPage() {
               </h3>
 
               <div className="space-y-3">
+                {/* Razorpay Online Gateway Option (Shown only when keys are configured) */}
+                {razorpayConfig.enabled && (
+                  <div
+                    onClick={() => setPaymentMethod("RAZORPAY")}
+                    className={`p-4 border rounded-xl cursor-pointer transition-colors ${
+                      paymentMethod === "RAZORPAY"
+                        ? "border-[#181513] dark:border-[#FAF8F5] bg-[#FAF8F5] dark:bg-[#221E1B]"
+                        : "border-[#E5DFD4] dark:border-[#2E2925] bg-[#F7F3EB] dark:bg-[#1A1715]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-5 h-5 text-[#A64732] dark:text-[#E07A5F]" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm text-[#181513] dark:text-[#FAF8F5]">
+                              Cards, UPI, Netbanking, & Wallets
+                            </span>
+                            <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-bold rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                              Instant
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-[#786F64] dark:text-[#A89F91]">
+                            Secured by Razorpay • Cards, Google Pay, PhonePe, Paytm & Netbanking
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          paymentMethod === "RAZORPAY"
+                            ? "border-[#181513] dark:border-[#FAF8F5] bg-[#181513] dark:bg-[#FAF8F5]"
+                            : "border-[#DDD5C7] dark:border-[#38322D]"
+                        }`}
+                      >
+                        {paymentMethod === "RAZORPAY" && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-[#181513]" />
+                        )}
+                      </div>
+                    </div>
+
+                    {paymentMethod === "RAZORPAY" && (
+                      <div className="mt-3 p-3 bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-xs text-[#575048] dark:text-[#DCD5CB] flex items-center gap-2.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>
+                          Secure, PCI-DSS compliant checkout. Clicking &quot;Pay Online&quot; will launch the official Razorpay payment portal.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* UPI QR Option (Conditionally Rendered) */}
                 {studioSettings.enableUpi && (
                   <div
@@ -902,7 +1066,15 @@ export default function CheckoutPage() {
             ) : (
               <ShieldCheck className="w-4 h-4" />
             )}
-            <span>{isSubmitting ? "Processing..." : `Place Order • ${formatCurrency(total)}`}</span>
+            <span>
+              {isSubmitting
+                ? paymentMethod === "RAZORPAY"
+                  ? "Launching Razorpay..."
+                  : "Processing..."
+                : paymentMethod === "RAZORPAY"
+                ? `Pay Online • ${formatCurrency(total)}`
+                : `Place Order • ${formatCurrency(total)}`}
+            </span>
           </button>
 
           <div className="text-[10px] font-medium uppercase tracking-wider text-center text-[#786F64] dark:text-[#A89F91]">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { comparePassword, signToken, COOKIE_NAME } from "@/lib/auth";
+import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -63,13 +64,21 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: { verificationCode, verificationExpiresAt },
       });
-      console.log(`[M.E-COMMERCE AUTH] 💌 Verification code for ${user.email}: ${verificationCode}`);
+
+      await sendVerificationEmail({
+        email: user.email,
+        code: verificationCode,
+        userName: user.name,
+      });
+
+      const emailConfigured = isEmailConfigured();
+
       return NextResponse.json(
         {
           requiresVerification: true,
           email: user.email,
           error: "Your email is not verified yet. Please enter the 6-digit code sent to your email.",
-          devCode: verificationCode,
+          ...(emailConfigured ? {} : { devCode: verificationCode }),
         },
         { status: 403 }
       );

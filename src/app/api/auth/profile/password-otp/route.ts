@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
 
 export const dynamic = "force-dynamic";
 
@@ -31,12 +32,18 @@ export async function POST() {
       },
     });
 
-    console.log(`[PASSWORD_OTP] Generated security code for ${user.email}: ${code}`);
+    await sendVerificationEmail({
+      email: user.email,
+      code,
+      userName: user.name,
+    });
+
+    const emailConfigured = isEmailConfigured();
 
     return NextResponse.json({
       success: true,
       message: `Security verification OTP sent to ${user.email}`,
-      devCode: process.env.NODE_ENV !== "production" ? code : undefined,
+      ...(emailConfigured ? {} : { devCode: code }),
     });
   } catch (error: any) {
     console.error("Password OTP error:", error);

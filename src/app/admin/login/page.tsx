@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -10,6 +10,31 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const enableDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_ADMIN !== "false";
+
+  const handleDemoLogin = async () => {
+    setError("");
+    setDemoLoading(true);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isDemoLogin: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Demo login failed.");
+      } else {
+        router.push("/admin/dashboard");
+      }
+    } catch {
+      setError("Network error connecting to demo portal.");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +125,23 @@ export default function AdminLoginPage() {
             <span>{loading ? "Signing In..." : "Sign In to Studio Portal"}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
+
+          {enableDemo && (
+            <div className="pt-3 border-t border-[#E5DFD4] dark:border-[#2E2925] space-y-2">
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={loading || demoLoading}
+                className="w-full h-11 rounded-xl border border-[#A64732] dark:border-[#E07A5F] bg-[#A64732]/5 dark:bg-[#E07A5F]/10 text-[#A64732] dark:text-[#E07A5F] hover:bg-[#A64732] hover:text-white dark:hover:bg-[#E07A5F] dark:hover:text-[#181513] text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Eye className="w-4 h-4" />
+                <span>{demoLoading ? "Opening Preview..." : "Explore Demo Admin (Read-Only)"}</span>
+              </button>
+              <p className="text-[10px] text-center text-[#786F64] dark:text-[#A89F91]">
+                Portfolio / Fork preview mode. You can inspect all dashboard metrics without editing privileges.
+              </p>
+            </div>
+          )}
         </form>
 
         <div className="text-center pt-2">

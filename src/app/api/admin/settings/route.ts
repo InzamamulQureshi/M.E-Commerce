@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAdminSession, hashPassword, comparePassword } from "@/lib/auth";
+import { getAdminSession, hashPassword, comparePassword, checkDemoAdminMutation } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +134,9 @@ export async function PUT(request: Request) {
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized artisan access" }, { status: 401 });
   }
+
+  const demoGuard = checkDemoAdminMutation(admin);
+  if (demoGuard) return demoGuard;
 
   try {
     const body = await request.json();

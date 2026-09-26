@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { OrderStatus, PaymentMethod } from "@prisma/client";
+import { sendOrderConfirmationEmail } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -98,6 +99,12 @@ export async function POST(request: Request) {
       paymentStatus = "PENDING_VERIFICATION";
       orderStatus = OrderStatus.PENDING;
     } else if (paymentMethod === "COD") {
+      paymentStatus = "PENDING";
+      orderStatus = OrderStatus.PENDING;
+    } else if (paymentMethod === "RAZORPAY") {
+      paymentStatus = "PENDING";
+      orderStatus = OrderStatus.PENDING;
+    } else if (paymentMethod === "STRIPE") {
       paymentStatus = "PENDING";
       orderStatus = OrderStatus.PENDING;
     } else if (paymentMethod === "ONLINE_CARD") {
@@ -343,6 +350,30 @@ export async function POST(request: Request) {
 
       return createdOrder;
     });
+
+    // Send React Email order confirmation for offline/direct orders (UPI_QR, COD)
+    if (order.paymentMethod !== "RAZORPAY" && order.paymentMethod !== "STRIPE") {
+      sendOrderConfirmationEmail({
+        email: order.customerEmail,
+        customerName: order.customerName,
+        orderNumber: order.orderNumber,
+        items: order.items.map((i: any) => ({
+          productTitle: i.productTitle,
+          quantity: i.quantity,
+          price: Number(i.price),
+        })),
+        subtotal: Number(order.subtotal),
+        discountTotal: Number(order.discountTotal),
+        shippingFee: Number(order.shippingFee),
+        finalTotal: Number(order.finalTotal),
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        shippingAddress: order.shippingAddress,
+        city: order.city || undefined,
+        state: order.state || undefined,
+        postalCode: order.postalCode || undefined,
+      }).catch((err) => console.error("Order email error:", err));
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,13 +1,70 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { comparePassword, signToken, COOKIE_NAME } from "@/lib/auth";
+import { comparePassword, hashPassword, signToken, COOKIE_NAME } from "@/lib/auth";
 
 const MASTER_ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || "mecommerce_admin_secret_2026";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { secretPasscode, email, password } = body;
+    const { secretPasscode, email, password, isDemoLogin } = body;
+
+    // Option 0: Demo Preview Admin Account Login (1-click or credentials)
+    const enableDemo = process.env.ENABLE_DEMO_ADMIN !== "false";
+    const demoEmail = (process.env.DEMO_ADMIN_EMAIL || "demo@mecommerce.dev").toLowerCase().trim();
+    const demoPassword = process.env.DEMO_ADMIN_PASSWORD || "demo_preview_2026";
+
+    if (enableDemo && (isDemoLogin || (email && email.toLowerCase().trim() === demoEmail))) {
+      if (!isDemoLogin && password !== demoPassword && password !== MASTER_ADMIN_SECRET) {
+        return NextResponse.json({ error: "Invalid demo credentials." }, { status: 401 });
+      }
+
+      let demoUser = await db.user.findUnique({
+        where: { email: demoEmail },
+      });
+
+      if (!demoUser) {
+        demoUser = await db.user.create({
+          data: {
+            name: "Demo Admin (Preview)",
+            email: demoEmail,
+            passwordHash: await hashPassword(demoPassword),
+            role: "ADMIN",
+            isDemo: true,
+          },
+        });
+      }
+
+      const token = signToken({
+        id: demoUser.id,
+        name: demoUser.name,
+        email: demoUser.email,
+        role: "ADMIN",
+        isDemo: true,
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        isDemo: true,
+        user: {
+          id: demoUser.id,
+          name: demoUser.name,
+          email: demoUser.email,
+          role: "ADMIN",
+          isDemo: true,
+        },
+      });
+
+      response.cookies.set(COOKIE_NAME, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
+
+      return response;
+    }
 
     // Option 1: Direct Master Studio Secret Passcode
     if (secretPasscode && secretPasscode === MASTER_ADMIN_SECRET) {

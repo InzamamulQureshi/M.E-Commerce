@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, checkDemoAdminMutation } from "@/lib/auth";
 import { CustomerStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -122,6 +122,9 @@ export async function PUT(request: Request) {
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized artisan access" }, { status: 401 });
   }
+
+  const demoGuard = checkDemoAdminMutation(admin);
+  if (demoGuard) return demoGuard;
 
   try {
     const body = await request.json();

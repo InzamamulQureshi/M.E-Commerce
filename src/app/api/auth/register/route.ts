@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
+import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const cleanEmail = email.toLowerCase().trim();
+    const cleanName = name.trim();
 
     if (!emailRegex.test(cleanEmail)) {
       return NextResponse.json(
@@ -81,14 +83,21 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`[M.E-COMMERCE AUTH] 💌 Verification code for ${cleanEmail}: ${verificationCode}`);
+    // Send React Email verification code (falls back gracefully if no key is configured)
+    await sendVerificationEmail({
+      email: cleanEmail,
+      code: verificationCode,
+      userName: cleanName,
+    });
+
+    const emailConfigured = isEmailConfigured();
 
     return NextResponse.json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
       message: `A 6-digit verification code has been sent to ${cleanEmail}.`,
-      devCode: verificationCode, // included for effortless demo / studio test verification
+      ...(emailConfigured ? {} : { devCode: verificationCode }),
     });
   } catch (error: any) {
     console.error("Registration error:", error);

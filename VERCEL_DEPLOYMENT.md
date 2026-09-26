@@ -113,6 +113,32 @@ In the **Environment Variables** section on Vercel, enter the following keys:
 | `NEXT_PUBLIC_WHATSAPP` | `+919876543210` | WhatsApp support contact link. |
 | `NEXT_PUBLIC_INSTAGRAM` | `https://instagram.com/mecommerce.official` | Instagram profile link. |
 
+### 3. Demo Admin Preview (Easily Removable on Repository Forks)
+
+| Variable Key | Example Value | Description |
+|---|---|---|
+| `ENABLE_DEMO_ADMIN` | `"true"` or `"false"` | Controls whether the 1-click read-only Demo Admin account is enabled. Set to `"false"` to completely remove. |
+| `NEXT_PUBLIC_ENABLE_DEMO_ADMIN` | `"true"` or `"false"` | Controls visibility of the "Explore Demo Admin" button on `/admin/login`. |
+| `DEMO_ADMIN_EMAIL` | `demo@mecommerce.dev` | Demo account login identifier. |
+| `DEMO_ADMIN_PASSWORD` | `demo` | Demo account password. |
+
+### 4. Modular Payment Gateways (Razorpay & Extensible Stripe)
+
+| Variable Key | Example Value | Description |
+|---|---|---|
+| `RAZORPAY_KEY_ID` | `rzp_live_...` or `rzp_test_...` | Razorpay Key ID (Server-side). Leave empty for seamless fallback to UPI QR & COD. |
+| `RAZORPAY_KEY_SECRET` | `...` | Razorpay Secret Key for HMAC-SHA256 signature verification. |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | `rzp_live_...` | Client-accessible Razorpay Key ID for checkout modal. |
+| `STRIPE_SECRET_KEY` | `sk_test_...` | (Optional) Stripe Secret Key for future Stripe activation. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` | (Optional) Stripe Publishable Key. |
+
+### 5. React Email System (Resend Provider)
+
+| Variable Key | Example Value | Description |
+|---|---|---|
+| `RESEND_API_KEY` (or `REACT_EMAIL_SECRET_KEY`) | `re_123456789...` | API Key from resend.com. Leave empty to fallback to development state (console logs OTP & provides devCode). |
+| `EMAIL_FROM` | `M.E-Commerce <orders@yourverifieddomain.com>` | Verified sender email address in Resend. |
+
 ---
 
 ## Phase 5: Deploy & Verify

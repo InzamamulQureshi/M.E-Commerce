@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -40,12 +41,18 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`[M.E-COMMERCE AUTH] 💌 New verification code for ${cleanEmail}: ${verificationCode}`);
+    await sendVerificationEmail({
+      email: cleanEmail,
+      code: verificationCode,
+      userName: user.name,
+    });
+
+    const emailConfigured = isEmailConfigured();
 
     return NextResponse.json({
       success: true,
       message: `A new 6-digit verification code has been sent to ${cleanEmail}.`,
-      devCode: verificationCode,
+      ...(emailConfigured ? {} : { devCode: verificationCode }),
     });
   } catch (error: any) {
     console.error("Resend verification code error:", error);

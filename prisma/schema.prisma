@@ -32,6 +32,8 @@ enum PaymentMethod {
   COD
   ONLINE_CARD
   UPI_QR
+  RAZORPAY
+  STRIPE
 }
 
 model User {
@@ -40,6 +42,7 @@ model User {
   email         String    @unique
   passwordHash  String
   role          Role      @default(CUSTOMER)
+  isDemo        Boolean   @default(false)
   status        CustomerStatus @default(ACTIVE)
   statusReason  String?        @db.Text
   statusUpdatedAt DateTime?
@@ -160,6 +163,9 @@ model Order {
   paymentMethod   PaymentMethod @default(UPI_QR)
   paymentStatus   String        @default("PENDING")
   paymentRef      String?
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
   courierName     String?
   trackingNumber  String?
   orderNotes      String?       @db.Text
