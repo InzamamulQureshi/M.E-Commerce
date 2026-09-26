@@ -113,12 +113,12 @@ In the **Environment Variables** section on Vercel, enter the following keys:
 | `NEXT_PUBLIC_WHATSAPP` | `+919876543210` | WhatsApp support contact link. |
 | `NEXT_PUBLIC_INSTAGRAM` | `https://instagram.com/mecommerce.official` | Instagram profile link. |
 
-### 3. Demo Admin Preview (Easily Removable on Repository Forks)
+### 3. Demo Admin Preview (Disabled by Default — Opt-In Only)
 
 | Variable Key | Example Value | Description |
 |---|---|---|
-| `ENABLE_DEMO_ADMIN` | `"true"` or `"false"` | Controls whether the 1-click read-only Demo Admin account is enabled. Set to `"false"` to completely remove. |
-| `NEXT_PUBLIC_ENABLE_DEMO_ADMIN` | `"true"` or `"false"` | Controls visibility of the "Explore Demo Admin" button on `/admin/login`. |
+| `ENABLE_DEMO_ADMIN` | `"true"` (Default: `"false"`) | Disabled by default. Set to `"true"` only if you want to enable the demo preview account on this deployment. |
+| `NEXT_PUBLIC_ENABLE_DEMO_ADMIN` | `"true"` (Default: `"false"`) | Controls visibility of the "Explore Demo Admin" button on `/admin/login`. Disabled by default unless explicitly set to `"true"`. |
 | `DEMO_ADMIN_EMAIL` | `demo@mecommerce.dev` | Demo account login identifier. |
 | `DEMO_ADMIN_PASSWORD` | `demo` | Demo account password. |
 

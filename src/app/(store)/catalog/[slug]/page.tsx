@@ -35,12 +35,7 @@ interface ProductPageProps {
   params: { slug: string };
 }
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const products = await db.product.findMany({ select: { slug: true } });
-  return products.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = params;

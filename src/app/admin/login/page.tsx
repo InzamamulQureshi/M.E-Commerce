@@ -12,7 +12,8 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
 
-  const enableDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_ADMIN !== "false";
+  // Demo admin preview is disabled by default; set NEXT_PUBLIC_ENABLE_DEMO_ADMIN="true" to enable
+  const enableDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_ADMIN === "true";
 
   const handleDemoLogin = async () => {
     setError("");

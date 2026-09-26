@@ -9,8 +9,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { secretPasscode, email, password, isDemoLogin } = body;
 
-    // Option 0: Demo Preview Admin Account Login (1-click or credentials)
-    const enableDemo = process.env.ENABLE_DEMO_ADMIN !== "false";
+    // Option 0: Demo Preview Admin Account Login (Disabled by default, requires explicit "true")
+    const enableDemo =
+      process.env.ENABLE_DEMO_ADMIN === "true" ||
+      process.env.NEXT_PUBLIC_ENABLE_DEMO_ADMIN === "true";
     const demoEmail = (process.env.DEMO_ADMIN_EMAIL || "demo@mecommerce.dev").toLowerCase().trim();
     const demoPassword = process.env.DEMO_ADMIN_PASSWORD || "demo_preview_2026";
 
