@@ -274,7 +274,7 @@ export default function AdminSettingsHubPage() {
                 General Store Identity & Logo
               </h2>
               <p className="text-xs text-[#786F64] dark:text-[#A89F91]">
-                Your studio's primary name, tagline, location badge, and header logo image.
+                Your studio&apos;s primary name, tagline, location badge, and header logo image.
               </p>
             </div>
           </div>

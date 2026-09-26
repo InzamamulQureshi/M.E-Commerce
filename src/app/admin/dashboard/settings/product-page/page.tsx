@@ -437,7 +437,7 @@ export default function ProductPageSettingsPage() {
                   </div>
 
                   <p className="text-[9.5px] text-[#786F64] dark:text-[#A89F91]">
-                    Tip: <code className="bg-[#EBE3D6] dark:bg-[#25211E] px-1 py-0.5 rounded">{"{craftDays}"}</code> dynamically inserts the product's actual creation days.
+                    Tip: <code className="bg-[#EBE3D6] dark:bg-[#25211E] px-1 py-0.5 rounded">{"{craftDays}"}</code> dynamically inserts the product&apos;s actual creation days.
                   </p>
                 </div>
               );

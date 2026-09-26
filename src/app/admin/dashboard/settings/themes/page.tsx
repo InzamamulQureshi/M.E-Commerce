@@ -309,7 +309,7 @@ export default function ThemeSettingsPage() {
           <span className="font-semibold text-[#181513] dark:text-[#FAF8F5] block mb-0.5">
             Non-Technical Guidance:
           </span>
-          Clicking "Apply This Theme" instantly updates your live storefront for all customers. If you have another tab open with your store, simply refresh it to preview the changes.
+          Clicking &quot;Apply This Theme&quot; instantly updates your live storefront for all customers. If you have another tab open with your store, simply refresh it to preview the changes.
         </div>
       </div>
     </div>
