@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { hashPassword, signToken, COOKIE_NAME } from "@/lib/auth";
+import { hashPassword, comparePassword, signToken, COOKIE_NAME } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +73,17 @@ export async function POST(request: Request) {
         { error: "Incorrect verification code. Please check your email and try again." },
         { status: 400 }
       );
+    }
+
+    // Disallow setting the same password that is already set on the account
+    if (user.passwordHash) {
+      const isSamePassword = await comparePassword(String(newPassword), user.passwordHash);
+      if (isSamePassword) {
+        return NextResponse.json(
+          { error: "New password cannot be the same as your current password. Please choose a different password." },
+          { status: 400 }
+        );
+      }
     }
 
     const passwordHash = await hashPassword(String(newPassword));

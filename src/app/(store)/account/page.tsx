@@ -653,6 +653,16 @@ export default function AccountPage() {
       return;
     }
 
+    if (currentPassword && currentPassword === newPassword) {
+      setPwError("New password cannot be the same as your current password. Please choose a different password.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPwError("New passwords do not match. Please verify.");
+      return;
+    }
+
     setPwSaving(true);
     try {
       const res = await fetch("/api/auth/profile", {

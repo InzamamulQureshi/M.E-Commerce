@@ -115,6 +115,13 @@ export async function PUT(request: Request) {
         );
       }
 
+      if (currentPassword === newPassword || (await comparePassword(newPassword, currentUser.passwordHash))) {
+        return NextResponse.json(
+          { error: "New password cannot be the same as your current password. Please choose a different password." },
+          { status: 400 }
+        );
+      }
+
       // Verify OTP code
       const cleanOtp = String(otp).trim();
       if (!currentUser.verificationCode || currentUser.verificationCode !== cleanOtp) {
