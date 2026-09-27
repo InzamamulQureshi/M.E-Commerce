@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
+import { sendVerificationEmail, isEmailConfigured, isDemoOtpEnabled } from "@/lib/email/service";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +59,7 @@ export async function POST() {
       userName: user.name,
     });
 
-    const includeDevCode = !isEmailConfigured() || !emailResult.success;
+    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
 
     return NextResponse.json({
       success: true,

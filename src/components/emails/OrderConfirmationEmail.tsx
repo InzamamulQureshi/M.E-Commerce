@@ -48,7 +48,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
   city = "",
   state = "",
   postalCode = "",
-  storeName = "M.E-Commerce",
+  storeName = "Store",
 }) => {
   return (
     <Html>

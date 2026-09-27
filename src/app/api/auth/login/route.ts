@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { comparePassword, signToken, COOKIE_NAME } from "@/lib/auth";
-import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
+import { sendVerificationEmail, isEmailConfigured, isDemoOtpEnabled } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -98,8 +98,8 @@ export async function POST(request: Request) {
         emailFailed = !emailResult.success;
       }
 
-      // ONLY include devCode if email is not configured OR if delivery failed (e.g. sandbox restriction)
-      const includeDevCode = !isEmailConfigured() || emailFailed;
+      // ONLY include devCode if demo OTP is enabled AND (email is not configured OR delivery failed)
+      const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || emailFailed);
 
       return NextResponse.json(
         {

@@ -3,6 +3,14 @@ import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { VerificationCodeEmail } from "@/components/emails/VerificationCodeEmail";
 import { OrderConfirmationEmail } from "@/components/emails/OrderConfirmationEmail";
+import { db } from "@/lib/db";
+
+export function isDemoOtpEnabled(): boolean {
+  return (
+    process.env.ENABLE_DEMO_OTP === "true" ||
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true"
+  );
+}
 
 export function getEmailApiKey(): string | null {
   const key =
@@ -20,12 +28,47 @@ export function isEmailConfigured(): boolean {
   return getEmailApiKey() !== null;
 }
 
-export function getEmailFromAddress(): string {
+export async function resolveStoreName(explicitStoreName?: string): Promise<string> {
+  if (explicitStoreName && explicitStoreName.trim() && explicitStoreName !== "M.E-Commerce") {
+    return explicitStoreName.trim();
+  }
+  try {
+    const setting = await db.studioSetting.findUnique({
+      where: { id: "default" },
+      select: { storeName: true },
+    });
+    if (setting?.storeName?.trim()) {
+      return setting.storeName.trim();
+    }
+  } catch {
+    // Graceful fallback if database lookup fails
+  }
   return (
-    process.env.EMAIL_FROM?.trim() ||
-    process.env.RESEND_FROM?.trim() ||
-    "M.E-Commerce <onboarding@resend.dev>"
+    process.env.NEXT_PUBLIC_STORE_NAME?.trim() ||
+    process.env.STORE_NAME?.trim() ||
+    explicitStoreName ||
+    "Store"
   );
+}
+
+export function getEmailFromAddress(storeName?: string): string {
+  const custom = process.env.EMAIL_FROM?.trim() || process.env.RESEND_FROM?.trim();
+  const name = storeName || process.env.NEXT_PUBLIC_STORE_NAME?.trim() || "Store";
+
+  if (custom) {
+    if (custom.includes("<") && custom.includes(">")) {
+      const match = custom.match(/<([^>]+)>/);
+      const emailPart = match ? match[1] : "onboarding@resend.dev";
+      const displayName = custom.replace(/<[^>]+>/, "").trim();
+      if (!displayName || displayName === "M.E-Commerce" || displayName === "Store") {
+        return `${name} <${emailPart}>`;
+      }
+      return custom;
+    }
+    return custom;
+  }
+
+  return `${name} <onboarding@resend.dev>`;
 }
 
 export interface SendVerificationEmailParams {
@@ -40,7 +83,7 @@ export async function sendVerificationEmail({
   email,
   code,
   userName,
-  storeName = "M.E-Commerce",
+  storeName,
   subject,
 }: SendVerificationEmailParams): Promise<{
   success: boolean;
@@ -48,6 +91,7 @@ export async function sendVerificationEmail({
   error?: string;
   isSandboxRestriction?: boolean;
 }> {
+  const effectiveStoreName = await resolveStoreName(storeName);
   const apiKey = getEmailApiKey();
 
   // Graceful fallback to console / devCode if secret key is empty or not provided
@@ -63,17 +107,17 @@ export async function sendVerificationEmail({
 
   try {
     const resend = new Resend(apiKey);
-    const from = getEmailFromAddress();
+    const from = getEmailFromAddress(effectiveStoreName);
 
     const html = await render(
       React.createElement(VerificationCodeEmail, {
         code,
         userName,
-        storeName,
+        storeName: effectiveStoreName,
       })
     );
 
-    const emailSubject = subject || `${code} is your ${storeName} verification code`;
+    const emailSubject = subject || `${code} is your ${effectiveStoreName} verification code`;
 
     const result = await resend.emails.send({
       from,
@@ -138,6 +182,7 @@ export interface SendOrderConfirmationParams {
 export async function sendOrderConfirmationEmail(
   params: SendOrderConfirmationParams
 ): Promise<{ success: boolean; simulated?: boolean; error?: string }> {
+  const effectiveStoreName = await resolveStoreName(params.storeName);
   const apiKey = getEmailApiKey();
 
   // Graceful fallback: do nothing if email key is not configured
@@ -153,8 +198,7 @@ export async function sendOrderConfirmationEmail(
 
   try {
     const resend = new Resend(apiKey);
-    const from = getEmailFromAddress();
-    const storeName = params.storeName || "M.E-Commerce";
+    const from = getEmailFromAddress(effectiveStoreName);
 
     const html = await render(
       React.createElement(OrderConfirmationEmail, {
@@ -171,14 +215,14 @@ export async function sendOrderConfirmationEmail(
         city: params.city,
         state: params.state,
         postalCode: params.postalCode,
-        storeName,
+        storeName: effectiveStoreName,
       })
     );
 
     const result = await resend.emails.send({
       from,
       to: [params.email],
-      subject: `Order Confirmed: #${params.orderNumber} - ${storeName}`,
+      subject: `Order Confirmed: #${params.orderNumber} - ${effectiveStoreName}`,
       html,
     });
 

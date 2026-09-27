@@ -19,8 +19,8 @@ interface VerificationCodeEmailProps {
 
 export const VerificationCodeEmail: React.FC<VerificationCodeEmailProps> = ({
   code = "123456",
-  userName = "Artisan Patron",
-  storeName = "M.E-Commerce",
+  userName = "Valued Customer",
+  storeName = "Store",
 }) => {
   return (
     <Html>

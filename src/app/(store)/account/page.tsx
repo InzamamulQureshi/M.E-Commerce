@@ -172,6 +172,21 @@ export default function AccountPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [pwOtpCooldown, setPwOtpCooldown] = useState(0);
 
+  // Profile Security & Password Reset States
+  const [profileSecurityMode, setProfileSecurityMode] = useState<"update" | "forgot">("update");
+  const [profileForgotCode, setProfileForgotCode] = useState("");
+  const [profileForgotNewPw, setProfileForgotNewPw] = useState("");
+  const [profileForgotConfirmPw, setProfileForgotConfirmPw] = useState("");
+  const [profileForgotCodeSent, setProfileForgotCodeSent] = useState(false);
+  const [profileForgotSending, setProfileForgotSending] = useState(false);
+  const [profileForgotCooldown, setProfileForgotCooldown] = useState(0);
+
+  // Account Deletion States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   // Guest Tracking lookup state
   const [lookupOrderNumber, setLookupOrderNumber] = useState("");
   const [lookupResult, setLookupResult] = useState<any>(null);
@@ -291,6 +306,15 @@ export default function AccountPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, [pwOtpCooldown]);
+
+  // Countdown timer for profile forgot password OTP cooldown
+  useEffect(() => {
+    if (profileForgotCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setProfileForgotCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [profileForgotCooldown]);
 
   // Auth Submit for Guest
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -658,6 +682,113 @@ export default function AccountPage() {
       setPwError("Network error. Please try again.");
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  // Profile: Request OTP to reset forgotten password
+  const handleSendProfileForgotOtp = async () => {
+    if (!user?.email || profileForgotSending || profileForgotCooldown > 0) return;
+    setPwError("");
+    setPwMsg("");
+    setProfileForgotSending(true);
+
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 429) {
+          setProfileForgotCodeSent(true);
+          setPwError(data.error || "Please wait before requesting a new code.");
+          if (data.retryAfter) setProfileForgotCooldown(data.retryAfter);
+        } else {
+          setPwError(data.error || "Failed to dispatch password reset OTP.");
+        }
+      } else {
+        setProfileForgotCodeSent(true);
+        setPwMsg(data.message || `A 6-digit reset code has been dispatched to ${user.email}`);
+        setProfileForgotCooldown(data.cooldown || 60);
+      }
+    } catch {
+      setPwError("Network error. Could not dispatch reset code.");
+    } finally {
+      setProfileForgotSending(false);
+    }
+  };
+
+  // Profile: Verify OTP & set new password
+  const handleProfileResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError("");
+    setPwMsg("");
+
+    if (!profileForgotCode || profileForgotCode.trim().length !== 6) {
+      setPwError("Please enter the 6-digit reset code sent to your email.");
+      return;
+    }
+    if (!profileForgotNewPw || profileForgotNewPw.length < 6) {
+      setPwError("New password must be at least 6 characters.");
+      return;
+    }
+    if (profileForgotNewPw !== profileForgotConfirmPw) {
+      setPwError("Passwords do not match. Please verify both fields.");
+      return;
+    }
+
+    setPwSaving(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user?.email,
+          code: profileForgotCode.trim(),
+          newPassword: profileForgotNewPw,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.error || "Failed to reset password.");
+      } else {
+        setPwMsg("Password reset successfully! Your new password is now active.");
+        setProfileForgotCode("");
+        setProfileForgotNewPw("");
+        setProfileForgotConfirmPw("");
+        setProfileForgotCodeSent(false);
+        setProfileSecurityMode("update");
+        setTimeout(() => setPwMsg(""), 5000);
+      }
+    } catch {
+      setPwError("Network error. Please try again.");
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  // Profile: Delete user account
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmationText !== "DELETE") return;
+    setDeleteLoading(true);
+    setDeleteError("");
+
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDeleteError(data.error || "Failed to delete account.");
+        setDeleteLoading(false);
+      } else {
+        notifyAuthChange(null);
+        window.location.href = "/";
+      }
+    } catch {
+      setDeleteError("Network error. Please try again.");
+      setDeleteLoading(false);
     }
   };
 
@@ -1255,7 +1386,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {devCodeHint && (authMode === "verify" || authMode === "reset") && (
+            {devCodeHint && process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true" && (authMode === "verify" || authMode === "reset") && (
               <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-medium">
                   <span>Demo OTP Code:</span>
@@ -2470,17 +2601,56 @@ export default function AccountPage() {
                 </form>
               </div>
 
-              {/* Security & Password with OTP Verification */}
+              {/* Security & Password with OTP Verification & Reset */}
               <div className="bg-white dark:bg-[#1C1816] p-6 sm:p-8 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm space-y-5">
-                <div className="pb-3 border-b border-stone-100 dark:border-stone-800">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-primary" />
-                    <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
-                      Security & Password
-                    </h3>
+                <div className="pb-3 border-b border-stone-100 dark:border-stone-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-primary" />
+                      <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
+                        Security & Password
+                      </h3>
+                    </div>
                   </div>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    For your account security, changing your password requires 2-factor OTP verification sent to your email.
+
+                  {/* Mode switcher tabs */}
+                  <div className="flex items-center gap-2 p-1 bg-stone-100 dark:bg-stone-900 rounded-xl text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileSecurityMode("update");
+                        setPwError("");
+                        setPwMsg("");
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-lg font-medium transition-all cursor-pointer ${
+                        profileSecurityMode === "update"
+                          ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs font-semibold"
+                          : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
+                      }`}
+                    >
+                      Update Password
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileSecurityMode("forgot");
+                        setPwError("");
+                        setPwMsg("");
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-lg font-medium transition-all cursor-pointer ${
+                        profileSecurityMode === "forgot"
+                          ? "bg-white dark:bg-stone-800 text-[#A64732] dark:text-[#E07A5F] shadow-xs font-semibold"
+                          : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
+                      }`}
+                    >
+                      Forgot? Reset via OTP
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-stone-500">
+                    {profileSecurityMode === "update"
+                      ? "Changing your password requires 2-factor OTP verification sent to your registered email."
+                      : "Forgot your current password? We will dispatch a 6-digit reset code to your registered email."}
                   </p>
                 </div>
 
@@ -2498,126 +2668,280 @@ export default function AccountPage() {
                   </div>
                 )}
 
-                {otpDevCode && (
+                {otpDevCode && process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true" && (
                   <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 rounded-xl text-xs font-medium flex items-center justify-between">
                     <span>Dev Security OTP:</span>
                     <strong className="font-mono text-sm tracking-widest">{otpDevCode}</strong>
                   </div>
                 )}
 
-                <form onSubmit={handlePasswordSave} className="space-y-4 text-xs">
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
-                      Current Password *
-                    </label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      required
-                      placeholder="••••••••"
-                      className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
-                      New Password *
-                    </label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      placeholder="At least 6 characters"
-                      className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
-                      Confirm New Password *
-                    </label>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      placeholder="Re-type new password"
-                      className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 flex items-center gap-1.5 cursor-pointer text-[11px]"
-                    >
-                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
-                    </button>
-
-                    {!otpSent && (
-                      <button
-                        type="button"
-                        onClick={handleSendPasswordOtp}
-                        disabled={otpSending}
-                        className="px-3 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-[#A64732] dark:text-[#E07A5F] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        {otpSending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <KeyRound className="w-3 h-3" />}
-                        <span>Send OTP to Email</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* OTP Verification Block */}
-                  {otpSent && (
-                    <div className="p-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-primary/30 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">
-                          Enter 6-Digit Email OTP *
+                {/* MODE 1: Standard Password Update */}
+                {profileSecurityMode === "update" ? (
+                  <form onSubmit={handlePasswordSave} className="space-y-4 text-xs">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                          Current Password *
                         </label>
                         <button
                           type="button"
-                          onClick={handleSendPasswordOtp}
-                          disabled={otpSending || pwOtpCooldown > 0}
-                          className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          onClick={() => {
+                            setProfileSecurityMode("forgot");
+                            setPwError("");
+                            setPwMsg("");
+                          }}
+                          className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold cursor-pointer"
                         >
-                          {otpSending
-                            ? "Sending..."
-                            : pwOtpCooldown > 0
-                            ? `Resend Code (${pwOtpCooldown}s)`
-                            : "Resend Code"}
+                          Forgot current password?
                         </button>
                       </div>
                       <input
-                        type="text"
-                        maxLength={6}
-                        inputMode="numeric"
-                        pattern="[0-9]{6}"
+                        type={showPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
                         required
-                        placeholder="123456"
-                        value={passwordOtp}
-                        onChange={(e) => setPasswordOtp(e.target.value.replace(/\D/g, ""))}
-                        className="w-full text-center text-lg tracking-[0.3em] font-bold font-mono h-11 bg-white dark:bg-[#12100E] rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        autoFocus
+                        placeholder="••••••••"
+                        className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
-                      <p className="text-[10.5px] text-stone-500">
-                        Check your inbox for the 6-digit confirmation code.
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
+                        New Password *
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        placeholder="At least 6 characters"
+                        className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
+                        Confirm New Password *
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        placeholder="Re-type new password"
+                        className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 flex items-center gap-1.5 cursor-pointer text-[11px]"
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
+                      </button>
+
+                      {!otpSent && (
+                        <button
+                          type="button"
+                          onClick={handleSendPasswordOtp}
+                          disabled={otpSending}
+                          className="px-3 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-[#A64732] dark:text-[#E07A5F] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {otpSending ? <RefreshCw className="w-3 h-3 animate-spin" /> : <KeyRound className="w-3 h-3" />}
+                          <span>Send OTP to Email</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* OTP Verification Block */}
+                    {otpSent && (
+                      <div className="p-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-primary/30 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                            Enter 6-Digit Email OTP *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleSendPasswordOtp}
+                            disabled={otpSending || pwOtpCooldown > 0}
+                            className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            {otpSending
+                              ? "Sending..."
+                              : pwOtpCooldown > 0
+                              ? `Resend Code (${pwOtpCooldown}s)`
+                              : "Resend Code"}
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          inputMode="numeric"
+                          pattern="[0-9]{6}"
+                          required
+                          placeholder="123456"
+                          value={passwordOtp}
+                          onChange={(e) => setPasswordOtp(e.target.value.replace(/\D/g, ""))}
+                          className="w-full text-center text-lg tracking-[0.3em] font-bold font-mono h-11 bg-white dark:bg-[#12100E] rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          autoFocus
+                        />
+                        <p className="text-[10.5px] text-stone-500">
+                          Check your inbox for the 6-digit confirmation code.
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={pwSaving || !otpSent}
+                      className="w-full h-11 bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] transition-colors cursor-pointer shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {pwSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                      <span>{otpSent ? "Verify OTP & Update Password" : "Click 'Send OTP to Email' First"}</span>
+                    </button>
+                  </form>
+                ) : (
+                  /* MODE 2: Forgot Password Reset via OTP */
+                  <form onSubmit={handleProfileResetPassword} className="space-y-4 text-xs">
+                    <div className="p-3.5 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl space-y-1.5">
+                      <p className="text-xs text-stone-700 dark:text-stone-300">
+                        Dispatch a 6-digit password reset code to <strong>{user?.email}</strong>.
+                      </p>
+                      <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                        📬 Can&apos;t find the email? Please check your <strong>Spam / Junk folder</strong> or Promotions tab.
                       </p>
                     </div>
-                  )}
 
+                    {!profileForgotCodeSent ? (
+                      <button
+                        type="button"
+                        onClick={handleSendProfileForgotOtp}
+                        disabled={profileForgotSending || profileForgotCooldown > 0}
+                        className="w-full h-11 bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] transition-colors cursor-pointer shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {profileForgotSending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5" />}
+                        <span>
+                          {profileForgotCooldown > 0
+                            ? `Wait ${profileForgotCooldown}s to Resend`
+                            : "Send Password Reset Code"}
+                        </span>
+                      </button>
+                    ) : (
+                      <>
+                        <div className="p-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-primary/30 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                              Enter 6-Digit Reset Code *
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleSendProfileForgotOtp}
+                              disabled={profileForgotSending || profileForgotCooldown > 0}
+                              className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              {profileForgotSending
+                                ? "Sending..."
+                                : profileForgotCooldown > 0
+                                ? `Resend Code (${profileForgotCooldown}s)`
+                                : "Resend Code"}
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={6}
+                            inputMode="numeric"
+                            pattern="[0-9]{6}"
+                            required
+                            placeholder="123456"
+                            value={profileForgotCode}
+                            onChange={(e) => setProfileForgotCode(e.target.value.replace(/\D/g, ""))}
+                            className="w-full text-center text-lg tracking-[0.3em] font-bold font-mono h-11 bg-white dark:bg-[#12100E] rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            autoFocus
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
+                            New Password *
+                          </label>
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={profileForgotNewPw}
+                            onChange={(e) => setProfileForgotNewPw(e.target.value)}
+                            required
+                            placeholder="At least 6 characters"
+                            className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300 mb-1">
+                            Confirm New Password *
+                          </label>
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={profileForgotConfirmPw}
+                            onChange={(e) => setProfileForgotConfirmPw(e.target.value)}
+                            required
+                            placeholder="Re-type new password"
+                            className="w-full h-11 px-3.5 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 flex items-center gap-1.5 cursor-pointer text-[11px]"
+                          >
+                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            <span>{showPassword ? "Hide passwords" : "Show passwords"}</span>
+                          </button>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={pwSaving}
+                          className="w-full h-11 bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] transition-colors cursor-pointer shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {pwSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                          <span>Verify Code & Reset Password</span>
+                        </button>
+                      </>
+                    )}
+                  </form>
+                )}
+              </div>
+
+              {/* Danger Zone: Delete Account */}
+              <div className="lg:col-span-2 mt-4 bg-rose-50/50 dark:bg-rose-950/20 p-6 sm:p-8 rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                      <h3 className="font-serif font-bold text-base text-rose-950 dark:text-rose-200">
+                        Delete Customer Account
+                      </h3>
+                    </div>
+                    <p className="text-xs text-rose-800/80 dark:text-rose-300/80 max-w-xl leading-relaxed">
+                      Permanently delete your profile, saved shipping destinations, and active coupon discounts. Your historical order records will be detached for business and tax records. This action cannot be reversed.
+                    </p>
+                  </div>
                   <button
-                    type="submit"
-                    disabled={pwSaving || !otpSent}
-                    className="w-full h-11 bg-[#181513] text-[#FAF8F5] dark:bg-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] transition-colors cursor-pointer shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                    type="button"
+                    onClick={() => {
+                      setIsDeleteModalOpen(true);
+                      setDeleteConfirmationText("");
+                      setDeleteError("");
+                    }}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors shrink-0 shadow-sm cursor-pointer"
                   >
-                    {pwSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{otpSent ? "Verify OTP & Update Password" : "Click 'Send OTP to Email' First"}</span>
+                    Delete Account
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           )}
@@ -2806,6 +3130,70 @@ export default function AccountPage() {
               </button>
             </div>
           </form>
+        </div>
+      </StoreModal>
+
+      {/* Delete Account Confirmation Modal */}
+      <StoreModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => !deleteLoading && setIsDeleteModalOpen(false)}
+        maxWidth="max-w-md"
+      >
+        <div className="bg-white dark:bg-[#1C1816] rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xl p-6 space-y-5">
+          <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-stone-900 dark:text-stone-100 text-base">
+                Delete Account Permanently?
+              </h3>
+              <p className="text-xs text-stone-500">This action is irreversible.</p>
+            </div>
+          </div>
+
+          {deleteError && (
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs rounded-xl">
+              {deleteError}
+            </div>
+          )}
+
+          <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+            Are you sure you want to permanently delete your account (<strong>{user?.email}</strong>)? All personal data, saved delivery addresses, and discount vouchers will be permanently erased.
+          </p>
+
+          <div className="space-y-2">
+            <label className="block text-[11px] font-semibold text-stone-700 dark:text-stone-300">
+              Type <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">DELETE</span> to confirm:
+            </label>
+            <input
+              type="text"
+              value={deleteConfirmationText}
+              onChange={(e) => setDeleteConfirmationText(e.target.value)}
+              placeholder="DELETE"
+              className="w-full h-10 px-3 text-xs bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 font-mono focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              disabled={deleteLoading}
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={deleteConfirmationText !== "DELETE" || deleteLoading}
+              onClick={handleDeleteAccount}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+            >
+              {deleteLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+              <span>Confirm Delete</span>
+            </button>
+          </div>
         </div>
       </StoreModal>
     </div>

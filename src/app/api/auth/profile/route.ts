@@ -182,3 +182,63 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Failed to update profile." }, { status: 500 });
   }
 }
+
+// DELETE delete user account
+export async function DELETE() {
+  const session = await getSessionUser();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized. Please sign in." }, { status: 401 });
+  }
+
+  // Prevent deleting primary studio admin account
+  if (session.role === "ADMIN") {
+    const adminCount = await db.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) {
+      return NextResponse.json(
+        { error: "Cannot delete the primary studio administrator account." },
+        { status: 403 }
+      );
+    }
+  }
+
+  try {
+    // 1. Detach orders so historical invoices & accounting records remain intact without DB foreign key errors
+    await db.order.updateMany({
+      where: { userId: session.id },
+      data: { userId: null },
+    });
+
+    // 2. Detach reviews so submitted product reviews preserve author name
+    await db.review.updateMany({
+      where: { userId: session.id },
+      data: { userId: null },
+    });
+
+    // 3. Delete user (Saved addresses cascade delete automatically)
+    await db.user.delete({
+      where: { id: session.id },
+    });
+
+    // 4. Clear auth cookie session
+    const response = NextResponse.json({
+      success: true,
+      message: "Your account and personal data have been permanently deleted.",
+    });
+
+    response.cookies.set(COOKIE_NAME, "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+
+    return response;
+  } catch (error: any) {
+    console.error("Delete user account error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete account. Please try again." },
+      { status: 500 }
+    );
+  }
+}

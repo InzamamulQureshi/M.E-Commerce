@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
+import { sendVerificationEmail, isEmailConfigured, isDemoOtpEnabled } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -69,12 +69,14 @@ export async function POST(request: Request) {
       userName: user.name,
     });
 
-    const includeDevCode = !isEmailConfigured() || !emailResult.success;
+    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
 
     let message = `A new 6-digit verification code has been sent to ${cleanEmail}.`;
     if (!emailResult.success) {
       message = emailResult.isSandboxRestriction
-        ? `Resend sandbox testing active: code provided directly on screen for testing.`
+        ? (includeDevCode
+            ? `Resend sandbox testing active: code provided directly on screen for testing.`
+            : `Testing mode active: Please verify your recipient domain on Resend to receive emails.`)
         : `A new 6-digit verification code has been generated.`;
     }
 

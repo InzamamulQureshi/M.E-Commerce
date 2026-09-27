@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { signToken, COOKIE_NAME } from "@/lib/auth";
+import { resolveStoreName } from "@/lib/email/service";
 
 export async function POST(request: Request) {
   try {
@@ -107,9 +108,11 @@ export async function POST(request: Request) {
       role: updatedUser.role,
     });
 
+    const storeName = await resolveStoreName();
+
     const response = NextResponse.json({
       success: true,
-      message: "Email verified successfully! Welcome to M.E-Commerce.",
+      message: `Email verified successfully! Welcome to ${storeName}.`,
       user: {
         id: updatedUser.id,
         name: updatedUser.name,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sendVerificationEmail, isEmailConfigured } from "@/lib/email/service";
+import { sendVerificationEmail, isEmailConfigured, isDemoOtpEnabled, resolveStoreName } from "@/lib/email/service";
 
 export const dynamic = "force-dynamic";
 
@@ -89,19 +89,24 @@ export async function POST(request: Request) {
       },
     });
 
+    const storeName = await resolveStoreName();
+
     const emailResult = await sendVerificationEmail({
       email: cleanEmail,
       code: verificationCode,
       userName: user.name,
-      subject: `${verificationCode} is your M.E-Commerce password reset code`,
+      storeName,
+      subject: `${verificationCode} is your ${storeName} password reset code`,
     });
 
-    const includeDevCode = !isEmailConfigured() || !emailResult.success;
+    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
 
     let message = `A 6-digit password reset code has been sent to ${cleanEmail}.`;
     if (!emailResult.success) {
       message = emailResult.isSandboxRestriction
-        ? `Resend sandbox testing active: reset code provided directly on screen for testing.`
+        ? (includeDevCode
+            ? `Resend sandbox testing active: reset code provided directly on screen for testing.`
+            : `Testing mode active: Please verify your recipient domain on Resend to receive emails.`)
         : `A 6-digit password reset code has been generated.`;
     }
 
