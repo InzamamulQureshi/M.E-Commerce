@@ -128,6 +128,15 @@ export default function CheckoutPage() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  useEffect(() => {
+    if (devCodeHint) {
+      console.log(
+        `%c[M.E-Commerce Testing OTP] Code: ${devCodeHint}`,
+        "background: #181513; color: #ffb703; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+      );
+    }
+  }, [devCodeHint]);
+
   const applyAddress = (addr: any) => {
     setSelectedSavedAddressId(addr.id || "custom");
     if (addr.name) setName(addr.name);

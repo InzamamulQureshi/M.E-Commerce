@@ -240,6 +240,33 @@ export default function AccountPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (devCodeHint) {
+      console.log(
+        `%c[M.E-Commerce Testing OTP] Code: ${devCodeHint}`,
+        "background: #181513; color: #ffb703; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+      );
+    }
+  }, [devCodeHint]);
+
+  useEffect(() => {
+    if (otpDevCode) {
+      console.log(
+        `%c[M.E-Commerce Security OTP] Code: ${otpDevCode}`,
+        "background: #181513; color: #ffb703; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+      );
+    }
+  }, [otpDevCode]);
+
+  useEffect(() => {
+    if (profileForgotDevCode) {
+      console.log(
+        `%c[M.E-Commerce Password Reset OTP] Code: ${profileForgotDevCode}`,
+        "background: #181513; color: #ffb703; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+      );
+    }
+  }, [profileForgotDevCode]);
+
   const fetchProfile = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/profile");

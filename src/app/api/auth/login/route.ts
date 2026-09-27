@@ -98,8 +98,8 @@ export async function POST(request: Request) {
         emailFailed = !emailResult.success;
       }
 
-      // ONLY include devCode if demo OTP is enabled AND (email is not configured OR delivery failed)
-      const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || emailFailed);
+      // Include devCode if demo OTP is enabled or email failed/not configured
+      const includeDevCode = isDemoOtpEnabled() || !isEmailConfigured() || emailFailed;
 
       return NextResponse.json(
         {

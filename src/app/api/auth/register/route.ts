@@ -67,7 +67,7 @@ export async function POST(request: Request) {
               requiresVerification: true,
               email: cleanEmail,
               retryAfter: waitSeconds,
-              devCode: (isDemoOtpEnabled() && !isEmailConfigured()) ? (existing.verificationCode || undefined) : undefined,
+              devCode: (isDemoOtpEnabled() || !isEmailConfigured()) ? (existing.verificationCode || undefined) : undefined,
             },
             { status: 429 }
           );
