@@ -165,6 +165,9 @@ export default function AccountPage() {
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [pwOtpCooldown, setPwOtpCooldown] = useState(0);
 
   // Guest Tracking lookup state
   const [lookupOrderNumber, setLookupOrderNumber] = useState("");
@@ -268,6 +271,24 @@ export default function AccountPage() {
     fetchProfile();
   }, [fetchProfile]);
 
+  // Countdown timer for email verification code cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  // Countdown timer for password OTP cooldown
+  useEffect(() => {
+    if (pwOtpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setPwOtpCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [pwOtpCooldown]);
+
   // Auth Submit for Guest
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -285,7 +306,14 @@ export default function AccountPage() {
 
         const data = await res.json();
         if (!res.ok) {
-          setAuthError(data.error || "Invalid credentials.");
+          if (data.requiresVerification) {
+            setAuthMode("verify");
+            setAuthError(data.error || "Email verification required.");
+            if (data.devCode) setDevCodeHint(data.devCode);
+            setResendCooldown(data.cooldown || 60);
+          } else {
+            setAuthError(data.error || "Invalid credentials.");
+          }
         } else {
           setUser(data.user);
           notifyAuthChange(data.user);
@@ -311,12 +339,20 @@ export default function AccountPage() {
 
         const data = await res.json();
         if (!res.ok) {
-          setAuthError(data.error || "Registration failed.");
+          if (res.status === 429) {
+            setAuthError(data.error || "Rate limit reached. Please wait before retrying.");
+            if (data.retryAfter) setResendCooldown(data.retryAfter);
+            if (data.devCode) setDevCodeHint(data.devCode);
+            setAuthMode("verify");
+          } else {
+            setAuthError(data.error || "Registration failed.");
+          }
         } else {
           setAuthSuccess(data.message || "Verification code sent to your email.");
           if (data.devCode) {
             setDevCodeHint(data.devCode);
           }
+          setResendCooldown(data.cooldown || 60);
           setAuthMode("verify");
         }
       } catch {
@@ -348,6 +384,36 @@ export default function AccountPage() {
       } finally {
         setAuthLoading(false);
       }
+    }
+  };
+
+  const handleResendAuthCode = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+
+    try {
+      const res = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAuthError(data.error || "Failed to resend code.");
+        if (data.retryAfter) {
+          setResendCooldown(data.retryAfter);
+        }
+      } else {
+        if (data.devCode) setDevCodeHint(data.devCode);
+        setAuthSuccess(data.message || "New verification code dispatched.");
+        setResendCooldown(data.cooldown || 60);
+      }
+    } catch {
+      setAuthError("Failed to resend verification code. Please check your connection.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -426,6 +492,7 @@ export default function AccountPage() {
 
   // Dispatch OTP for Password Change
   const handleSendPasswordOtp = async () => {
+    if (pwOtpCooldown > 0 || otpSending) return;
     setOtpSending(true);
     setPwError("");
     setPwMsg("");
@@ -455,12 +522,16 @@ export default function AccountPage() {
       const data = await res.json();
       if (!res.ok) {
         setPwError(data.error || "Failed to dispatch verification code.");
+        if (data.retryAfter) {
+          setPwOtpCooldown(data.retryAfter);
+        }
       } else {
         setOtpSent(true);
         setPwMsg(data.message || `Verification code sent to ${user?.email}`);
         if (data.devCode) {
           setOtpDevCode(data.devCode);
         }
+        setPwOtpCooldown(data.cooldown || 60);
       }
     } catch {
       setPwError("Network error. Could not send verification OTP.");
@@ -1052,6 +1123,9 @@ export default function AccountPage() {
                 <p className="text-xs text-stone-500">
                   Code sent to <strong>{authEmail}</strong>
                 </p>
+                <p className="text-[11px] text-stone-400">
+                  Code valid for 10 minutes.
+                </p>
               </div>
             )}
 
@@ -1070,9 +1144,21 @@ export default function AccountPage() {
             )}
 
             {devCodeHint && authMode === "verify" && (
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs font-medium flex items-center justify-between">
-                <span>Demo OTP Code:</span>
-                <strong className="font-bold font-mono tracking-wider">{devCodeHint}</strong>
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs space-y-1.5">
+                <div className="flex items-center justify-between font-medium">
+                  <span>Demo OTP Code:</span>
+                  <button
+                    type="button"
+                    onClick={() => setVerificationCode(devCodeHint)}
+                    className="font-bold font-mono tracking-widest text-sm bg-amber-200/80 dark:bg-amber-800/60 px-2 py-0.5 rounded hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors cursor-pointer"
+                    title="Click to auto-fill code"
+                  >
+                    {devCodeHint}
+                  </button>
+                </div>
+                <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
+                  (Resend testing restriction active. Click code above to auto-fill.)
+                </p>
               </div>
             )}
 
@@ -1106,23 +1192,19 @@ export default function AccountPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={async () => {
-                        try {
-                          const res = await fetch("/api/auth/resend-code", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ email: authEmail }),
-                          });
-                          const data = await res.json();
-                          if (data.devCode) setDevCodeHint(data.devCode);
-                          setAuthSuccess("New verification code dispatched.");
-                        } catch {
-                          setAuthError("Failed to resend code.");
-                        }
-                      }}
-                      className="text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold cursor-pointer"
+                      disabled={resendCooldown > 0 || resendLoading}
+                      onClick={handleResendAuthCode}
+                      className={`font-semibold transition-colors ${
+                        resendCooldown > 0 || resendLoading
+                          ? "text-stone-400 dark:text-stone-600 cursor-not-allowed"
+                          : "text-[#A64732] dark:text-[#E07A5F] hover:underline cursor-pointer"
+                      }`}
                     >
-                      Resend Code
+                      {resendLoading
+                        ? "Sending..."
+                        : resendCooldown > 0
+                        ? `Resend Code (${resendCooldown}s)`
+                        : "Resend Code"}
                     </button>
                   </div>
                 </div>
@@ -2239,10 +2321,14 @@ export default function AccountPage() {
                         <button
                           type="button"
                           onClick={handleSendPasswordOtp}
-                          disabled={otpSending}
-                          className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold"
+                          disabled={otpSending || pwOtpCooldown > 0}
+                          className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
-                          Resend Code
+                          {otpSending
+                            ? "Sending..."
+                            : pwOtpCooldown > 0
+                            ? `Resend Code (${pwOtpCooldown}s)`
+                            : "Resend Code"}
                         </button>
                       </div>
                       <input

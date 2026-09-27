@@ -37,9 +37,9 @@ export async function POST(request: Request) {
       where: { email: cleanEmail },
     });
 
-    // 6-digit verification OTP
+    // 6-digit verification OTP (valid for 10 minutes)
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    const verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
     const passwordHash = await hashPassword(password);
 
@@ -50,7 +50,31 @@ export async function POST(request: Request) {
           { status: 409 }
         );
       }
-      // If user exists but was never verified, update password and refresh OTP
+
+      // If user exists but was never verified, check 60s cooldown to prevent abuse
+      const CODE_EXPIRY_MS = 10 * 60 * 1000;
+      const RESEND_COOLDOWN_MS = 60 * 1000;
+      if (existing.verificationExpiresAt) {
+        const timeRemainingMs = existing.verificationExpiresAt.getTime() - Date.now();
+        if (timeRemainingMs > CODE_EXPIRY_MS - RESEND_COOLDOWN_MS) {
+          const waitSeconds = Math.min(
+            60,
+            Math.max(1, Math.ceil((timeRemainingMs - (CODE_EXPIRY_MS - RESEND_COOLDOWN_MS)) / 1000))
+          );
+          return NextResponse.json(
+            {
+              error: `A verification code was recently requested. Please wait ${waitSeconds}s before requesting a new code.`,
+              requiresVerification: true,
+              email: cleanEmail,
+              retryAfter: waitSeconds,
+              devCode: existing.verificationCode || undefined,
+            },
+            { status: 429 }
+          );
+        }
+      }
+
+      // Update details and refresh OTP
       await db.user.update({
         where: { id: existing.id },
         data: {
@@ -83,21 +107,30 @@ export async function POST(request: Request) {
       });
     }
 
-    // Send React Email verification code (falls back gracefully if no key is configured)
-    await sendVerificationEmail({
+    // Send React Email verification code (falls back gracefully if no key is configured or recipient is unverified sandbox)
+    const emailResult = await sendVerificationEmail({
       email: cleanEmail,
       code: verificationCode,
       userName: cleanName,
     });
 
-    const emailConfigured = isEmailConfigured();
+    const includeDevCode = !isEmailConfigured() || !emailResult.success;
+
+    let message = `A 6-digit verification code has been sent to ${cleanEmail}.`;
+    if (!emailResult.success) {
+      message = emailResult.isSandboxRestriction
+        ? `Resend sandbox testing active: code provided directly on screen for testing.`
+        : `A 6-digit verification code has been generated.`;
+    }
 
     return NextResponse.json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      message: `A 6-digit verification code has been sent to ${cleanEmail}.`,
-      ...(emailConfigured ? {} : { devCode: verificationCode }),
+      message,
+      ...(includeDevCode ? { devCode: verificationCode } : {}),
+      expiresIn: 600,
+      cooldown: 60,
     });
   } catch (error: any) {
     console.error("Registration error:", error);

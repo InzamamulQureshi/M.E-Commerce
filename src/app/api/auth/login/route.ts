@@ -58,27 +58,57 @@ export async function POST(request: Request) {
     }
 
     if (user.role === "CUSTOMER" && !user.emailVerified) {
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const verificationExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-      await db.user.update({
-        where: { id: user.id },
-        data: { verificationCode, verificationExpiresAt },
-      });
+      const CODE_EXPIRY_MS = 10 * 60 * 1000;
+      const RESEND_COOLDOWN_MS = 60 * 1000;
 
-      await sendVerificationEmail({
-        email: user.email,
-        code: verificationCode,
-        userName: user.name,
-      });
+      let codeToUse = user.verificationCode;
+      let isRecentlySent = false;
+      let remainingCooldown = 60;
 
-      const emailConfigured = isEmailConfigured();
+      if (user.verificationCode && user.verificationExpiresAt) {
+        const timeRemainingMs = user.verificationExpiresAt.getTime() - Date.now();
+        // If code is still valid and was generated < 60s ago, reuse without re-spamming
+        if (timeRemainingMs > CODE_EXPIRY_MS - RESEND_COOLDOWN_MS) {
+          isRecentlySent = true;
+          remainingCooldown = Math.min(
+            60,
+            Math.max(1, Math.ceil((timeRemainingMs - (CODE_EXPIRY_MS - RESEND_COOLDOWN_MS)) / 1000))
+          );
+        }
+      }
+
+      let emailResult: { success: boolean; isSandboxRestriction?: boolean; error?: string } = {
+        success: false,
+        isSandboxRestriction: false,
+      };
+
+      if (!isRecentlySent || !codeToUse) {
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationExpiresAt = new Date(Date.now() + CODE_EXPIRY_MS);
+        codeToUse = verificationCode;
+
+        await db.user.update({
+          where: { id: user.id },
+          data: { verificationCode, verificationExpiresAt },
+        });
+
+        emailResult = await sendVerificationEmail({
+          email: user.email,
+          code: verificationCode,
+          userName: user.name,
+        });
+      }
+
+      const includeDevCode = !isEmailConfigured() || !emailResult.success || !isRecentlySent;
 
       return NextResponse.json(
         {
           requiresVerification: true,
           email: user.email,
-          error: "Your email is not verified yet. Please enter the 6-digit code sent to your email.",
-          ...(emailConfigured ? {} : { devCode: verificationCode }),
+          error: "Your email is not verified yet. Please enter the 6-digit verification code.",
+          ...(includeDevCode && codeToUse ? { devCode: codeToUse } : {}),
+          expiresIn: 600,
+          cooldown: remainingCooldown,
         },
         { status: 403 }
       );

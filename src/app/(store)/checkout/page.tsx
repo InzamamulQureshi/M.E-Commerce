@@ -66,7 +66,10 @@ export default function CheckoutPage() {
   const [verificationCode, setVerificationCode] = useState("");
   const [devCodeHint, setDevCodeHint] = useState("");
   const [authError, setAuthError] = useState("");
+  const [authSuccess, setAuthSuccess] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -110,6 +113,15 @@ export default function CheckoutPage() {
       })
       .catch(() => {});
   }, []);
+
+  // Cooldown timer for inline resend code button
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const applyAddress = (addr: any) => {
     setSelectedSavedAddressId(addr.id || "custom");
@@ -164,6 +176,7 @@ export default function CheckoutPage() {
   const handleInlineLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
+    setAuthSuccess("");
     setAuthLoading(true);
 
     try {
@@ -177,8 +190,9 @@ export default function CheckoutPage() {
       if (!res.ok) {
         if (data.requiresVerification) {
           setAuthMode("verify");
-          setAuthError("Email verification required. Code sent to your inbox.");
+          setAuthError(data.error || "Email verification required. Code sent to your inbox.");
           setDevCodeHint(data.devCode || "");
+          setResendCooldown(data.cooldown || 60);
         } else {
           setAuthError(data.error || "Login failed");
         }
@@ -196,6 +210,7 @@ export default function CheckoutPage() {
   const handleInlineRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
+    setAuthSuccess("");
     setAuthLoading(true);
 
     try {
@@ -207,16 +222,52 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setAuthError(data.error || "Registration failed");
+        if (res.status === 429) {
+          setAuthMode("verify");
+          setAuthError(data.error || "Rate limit reached. Please wait before retrying.");
+          if (data.retryAfter) setResendCooldown(data.retryAfter);
+          if (data.devCode) setDevCodeHint(data.devCode);
+        } else {
+          setAuthError(data.error || "Registration failed");
+        }
       } else {
         setAuthMode("verify");
-        setAuthError("Verification code sent to your email!");
+        setAuthSuccess(data.message || "Verification code sent to your email!");
         setDevCodeHint(data.devCode || "");
+        setResendCooldown(data.cooldown || 60);
       }
     } catch {
       setAuthError("Network error. Please try again.");
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handleInlineResendCode = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+
+    try {
+      const res = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAuthError(data.error || "Failed to resend code.");
+        if (data.retryAfter) setResendCooldown(data.retryAfter);
+      } else {
+        if (data.devCode) setDevCodeHint(data.devCode);
+        setAuthSuccess(data.message || "New verification code dispatched.");
+        setResendCooldown(data.cooldown || 60);
+      }
+    } catch {
+      setAuthError("Failed to resend verification code. Please check your connection.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -470,9 +521,33 @@ export default function CheckoutPage() {
               </div>
 
               {authError && (
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-medium rounded-xl">
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-300 text-xs font-medium rounded-xl">
                   {authError}
-                  {devCodeHint && <div className="mt-1 font-bold">Verification code: {devCodeHint}</div>}
+                </div>
+              )}
+
+              {authSuccess && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 text-xs font-medium rounded-xl">
+                  {authSuccess}
+                </div>
+              )}
+
+              {devCodeHint && authMode === "verify" && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-medium rounded-xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span>Demo OTP Code:</span>
+                    <button
+                      type="button"
+                      onClick={() => setVerificationCode(devCodeHint)}
+                      className="font-bold font-mono tracking-widest text-sm bg-amber-200/80 dark:bg-amber-800/60 px-2 py-0.5 rounded hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors cursor-pointer"
+                      title="Click to auto-fill code"
+                    >
+                      {devCodeHint}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
+                    (Resend testing restriction active. Click code above to auto-fill.)
+                  </p>
                 </div>
               )}
 
@@ -568,18 +643,53 @@ export default function CheckoutPage() {
               {authMode === "verify" && (
                 <form onSubmit={handleInlineVerify} className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] mb-1">
-                      Enter 6-Digit Email Verification Code
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5]">
+                        6-Digit Verification Code
+                      </label>
+                      <span className="text-[10px] text-[#786F64] dark:text-[#A89F91]">
+                        Valid for 10 minutes
+                      </span>
+                    </div>
                     <input
                       type="text"
                       required
                       maxLength={6}
                       value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
                       placeholder="123456"
                       className="w-full h-11 text-center font-bold tracking-[0.5em] text-sm bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
+                      autoFocus
                     />
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("register");
+                        setAuthError("");
+                        setAuthSuccess("");
+                      }}
+                      className="text-[#786F64] dark:text-[#A89F91] hover:underline cursor-pointer"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={resendCooldown > 0 || resendLoading}
+                      onClick={handleInlineResendCode}
+                      className={`font-semibold transition-colors ${
+                        resendCooldown > 0 || resendLoading
+                          ? "text-[#786F64] dark:text-[#A89F91] cursor-not-allowed opacity-60"
+                          : "text-[#A64732] dark:text-[#E07A5F] hover:underline cursor-pointer"
+                      }`}
+                    >
+                      {resendLoading
+                        ? "Sending..."
+                        : resendCooldown > 0
+                        ? `Resend Code (${resendCooldown}s)`
+                        : "Resend Code"}
+                    </button>
                   </div>
                   <button
                     type="submit"

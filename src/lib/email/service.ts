@@ -40,7 +40,12 @@ export async function sendVerificationEmail({
   code,
   userName,
   storeName = "M.E-Commerce",
-}: SendVerificationEmailParams): Promise<{ success: boolean; simulated?: boolean; error?: string }> {
+}: SendVerificationEmailParams): Promise<{
+  success: boolean;
+  simulated?: boolean;
+  error?: string;
+  isSandboxRestriction?: boolean;
+}> {
   const apiKey = getEmailApiKey();
 
   // Graceful fallback to console / devCode if secret key is empty or not provided
@@ -74,8 +79,26 @@ export async function sendVerificationEmail({
     });
 
     if (result.error) {
-      console.warn("[React Email] Resend API error:", result.error);
-      return { success: false, error: result.error.message };
+      const isSandbox =
+        (result.error as any).statusCode === 403 ||
+        result.error.message?.includes("testing emails to your own email address") ||
+        result.error.name === "validation_error";
+
+      if (isSandbox) {
+        console.warn(
+          `[React Email: Sandbox Restriction] ⚠️ Resend free testing domain (onboarding@resend.dev) can only deliver to the account owner's registered email.\n` +
+          `Recipient: "${email}" is unverified on Resend. System will provide fallback OTP on screen.\n` +
+          `👉 To send real emails to all customers in production, verify your domain at https://resend.com/domains and set EMAIL_FROM="Brand <orders@yourverifieddomain.com>".`
+        );
+      } else {
+        console.warn("[React Email] Resend API error:", result.error);
+      }
+
+      return {
+        success: false,
+        error: result.error.message,
+        isSandboxRestriction: Boolean(isSandbox),
+      };
     }
 
     return { success: true };

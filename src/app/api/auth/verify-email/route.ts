@@ -59,16 +59,33 @@ export async function POST(request: Request) {
       return response;
     }
 
-    if (user.verificationCode !== cleanCode) {
+    if (!user.verificationCode) {
       return NextResponse.json(
-        { error: "Incorrect verification code. Please check and try again." },
+        { error: "No pending verification code found. Please request a new code." },
         { status: 400 }
       );
     }
 
     if (user.verificationExpiresAt && new Date() > user.verificationExpiresAt) {
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          verificationCode: null,
+          verificationExpiresAt: null,
+        },
+      });
       return NextResponse.json(
-        { error: "Verification code has expired. Please request a new code." },
+        {
+          error: "This verification code has expired (codes are valid for 10 minutes). Please request a new code.",
+          codeExpired: true,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (user.verificationCode !== cleanCode) {
+      return NextResponse.json(
+        { error: "Incorrect verification code. Please check your email or enter the 6-digit code again." },
         { status: 400 }
       );
     }

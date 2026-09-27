@@ -30,8 +30,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // Cooldown Rate Limiting: 60-second limit to prevent abuse
+    const CODE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes validity
+    const RESEND_COOLDOWN_MS = 60 * 1000; // 60 seconds minimum interval
+
+    if (user.verificationExpiresAt) {
+      const timeRemainingMs = user.verificationExpiresAt.getTime() - Date.now();
+      // If code was created within the last RESEND_COOLDOWN_MS (60s)
+      if (timeRemainingMs > CODE_EXPIRY_MS - RESEND_COOLDOWN_MS) {
+        const waitSeconds = Math.min(
+          60,
+          Math.max(1, Math.ceil((timeRemainingMs - (CODE_EXPIRY_MS - RESEND_COOLDOWN_MS)) / 1000))
+        );
+        return NextResponse.json(
+          {
+            error: `Please wait ${waitSeconds}s before requesting a new code.`,
+            retryAfter: waitSeconds,
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const verificationExpiresAt = new Date(Date.now() + CODE_EXPIRY_MS);
 
     await db.user.update({
       where: { id: user.id },
@@ -41,18 +63,27 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendVerificationEmail({
+    const emailResult = await sendVerificationEmail({
       email: cleanEmail,
       code: verificationCode,
       userName: user.name,
     });
 
-    const emailConfigured = isEmailConfigured();
+    const includeDevCode = !isEmailConfigured() || !emailResult.success;
+
+    let message = `A new 6-digit verification code has been sent to ${cleanEmail}.`;
+    if (!emailResult.success) {
+      message = emailResult.isSandboxRestriction
+        ? `Resend sandbox testing active: code provided directly on screen for testing.`
+        : `A new 6-digit verification code has been generated.`;
+    }
 
     return NextResponse.json({
       success: true,
-      message: `A new 6-digit verification code has been sent to ${cleanEmail}.`,
-      ...(emailConfigured ? {} : { devCode: verificationCode }),
+      message,
+      expiresIn: 600,
+      cooldown: 60,
+      ...(includeDevCode ? { devCode: verificationCode } : {}),
     });
   } catch (error: any) {
     console.error("Resend verification code error:", error);

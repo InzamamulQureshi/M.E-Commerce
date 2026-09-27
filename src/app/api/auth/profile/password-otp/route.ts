@@ -20,9 +20,30 @@ export async function POST() {
       return NextResponse.json({ error: "User account not found." }, { status: 404 });
     }
 
-    // Generate 6-digit verification code
+    // 60-second cooldown rate limit to prevent abuse
+    const CODE_EXPIRY_MS = 10 * 60 * 1000;
+    const RESEND_COOLDOWN_MS = 60 * 1000;
+
+    if (user.verificationExpiresAt) {
+      const timeRemainingMs = user.verificationExpiresAt.getTime() - Date.now();
+      if (timeRemainingMs > CODE_EXPIRY_MS - RESEND_COOLDOWN_MS) {
+        const waitSeconds = Math.min(
+          60,
+          Math.max(1, Math.ceil((timeRemainingMs - (CODE_EXPIRY_MS - RESEND_COOLDOWN_MS)) / 1000))
+        );
+        return NextResponse.json(
+          {
+            error: `Please wait ${waitSeconds}s before requesting a new password OTP.`,
+            retryAfter: waitSeconds,
+          },
+          { status: 429 }
+        );
+      }
+    }
+
+    // Generate 6-digit verification code (10 minutes validity)
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + CODE_EXPIRY_MS);
 
     await db.user.update({
       where: { id: user.id },
@@ -32,18 +53,20 @@ export async function POST() {
       },
     });
 
-    await sendVerificationEmail({
+    const emailResult = await sendVerificationEmail({
       email: user.email,
       code,
       userName: user.name,
     });
 
-    const emailConfigured = isEmailConfigured();
+    const includeDevCode = !isEmailConfigured() || !emailResult.success;
 
     return NextResponse.json({
       success: true,
       message: `Security verification OTP sent to ${user.email}`,
-      ...(emailConfigured ? {} : { devCode: code }),
+      cooldown: 60,
+      expiresIn: 600,
+      ...(includeDevCode ? { devCode: code } : {}),
     });
   } catch (error: any) {
     console.error("Password OTP error:", error);
