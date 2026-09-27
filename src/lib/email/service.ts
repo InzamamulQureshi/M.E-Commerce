@@ -33,6 +33,7 @@ export interface SendVerificationEmailParams {
   code: string;
   userName?: string;
   storeName?: string;
+  subject?: string;
 }
 
 export async function sendVerificationEmail({
@@ -40,6 +41,7 @@ export async function sendVerificationEmail({
   code,
   userName,
   storeName = "M.E-Commerce",
+  subject,
 }: SendVerificationEmailParams): Promise<{
   success: boolean;
   simulated?: boolean;
@@ -71,10 +73,12 @@ export async function sendVerificationEmail({
       })
     );
 
+    const emailSubject = subject || `${code} is your ${storeName} verification code`;
+
     const result = await resend.emails.send({
       from,
       to: [email],
-      subject: `${code} is your ${storeName} verification code`,
+      subject: emailSubject,
       html,
     });
 

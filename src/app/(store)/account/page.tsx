@@ -155,9 +155,12 @@ export default function AccountPage() {
   const [pwError, setPwError] = useState("");
 
   // Auth states (for unauthenticated users)
-  const [authMode, setAuthMode] = useState<"login" | "register" | "verify" | "track">("login");
+  const [authMode, setAuthMode] = useState<"login" | "register" | "verify" | "track" | "forgot" | "reset">("login");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [newResetPassword, setNewResetPassword] = useState("");
+  const [confirmResetPassword, setConfirmResetPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [authName, setAuthName] = useState("");
   const [authPhone, setAuthPhone] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -382,6 +385,76 @@ export default function AccountPage() {
       } finally {
         setAuthLoading(false);
       }
+    } else if (authMode === "forgot") {
+      try {
+        const res = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: authEmail }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 429) {
+            setAuthError(data.error || "Please wait before requesting a new code.");
+            if (data.retryAfter) setResendCooldown(data.retryAfter);
+            setDevCodeHint(data.devCode || "");
+            setAuthMode("reset");
+          } else {
+            setAuthError(data.error || "Failed to process password reset request.");
+          }
+        } else {
+          setAuthSuccess(data.message || "A 6-digit password reset code has been sent.");
+          setDevCodeHint(data.devCode || "");
+          setResendCooldown(data.cooldown || 60);
+          setAuthMode("reset");
+        }
+      } catch {
+        setAuthError("Network error. Please try again.");
+      } finally {
+        setAuthLoading(false);
+      }
+    } else if (authMode === "reset") {
+      if (!newResetPassword || newResetPassword.length < 6) {
+        setAuthError("New password must be at least 6 characters long.");
+        setAuthLoading(false);
+        return;
+      }
+      if (newResetPassword !== confirmResetPassword) {
+        setAuthError("Passwords do not match. Please re-enter.");
+        setAuthLoading(false);
+        return;
+      }
+      if (!verificationCode || verificationCode.trim().length !== 6) {
+        setAuthError("Please enter the 6-digit verification code sent to your email.");
+        setAuthLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: authEmail,
+            code: verificationCode,
+            newPassword: newResetPassword,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setAuthError(data.error || "Failed to reset password.");
+        } else {
+          setUser(data.user);
+          notifyAuthChange(data.user);
+          fetchProfile();
+        }
+      } catch {
+        setAuthError("Network error. Could not reset password.");
+      } finally {
+        setAuthLoading(false);
+      }
     }
   };
 
@@ -391,8 +464,10 @@ export default function AccountPage() {
     setAuthError("");
     setAuthSuccess("");
 
+    const endpoint = authMode === "reset" ? "/api/auth/forgot-password" : "/api/auth/resend-code";
+
     try {
-      const res = await fetch("/api/auth/resend-code", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authEmail }),
@@ -1076,8 +1151,8 @@ export default function AccountPage() {
         ) : (
           /* Login & Register Card */
           <div className="max-w-md mx-auto bg-white dark:bg-[#1C1816] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-10 space-y-6 shadow-sm">
-            {/* Mode Switcher */}
-            {authMode !== "verify" ? (
+            {/* Mode Switcher / Header */}
+            {authMode === "login" || authMode === "register" ? (
               <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs sm:text-sm font-semibold uppercase tracking-wider gap-1">
                 <button
                   type="button"
@@ -1112,13 +1187,45 @@ export default function AccountPage() {
                   Register
                 </button>
               </div>
-            ) : (
+            ) : authMode === "verify" ? (
               <div className="text-center space-y-1">
                 <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center mx-auto mb-2">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif font-bold tracking-tight text-xl text-stone-900 dark:text-stone-100">
                   Verify Email
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Code sent to <strong>{authEmail}</strong>
+                </p>
+                <p className="text-[11px] text-stone-400">
+                  Code valid for 10 minutes.
+                </p>
+                <div className="pt-1">
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 inline-block text-center leading-relaxed">
+                    📬 Can&apos;t find the email? Please check your <strong>Spam / Junk folder</strong> or Promotions tab.
+                  </p>
+                </div>
+              </div>
+            ) : authMode === "forgot" ? (
+              <div className="text-center space-y-1">
+                <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center mx-auto mb-2">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif font-bold tracking-tight text-xl text-stone-900 dark:text-stone-100">
+                  Forgot Password
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Enter your registered email to receive a 6-digit verification code.
+                </p>
+              </div>
+            ) : (
+              <div className="text-center space-y-1">
+                <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center mx-auto mb-2">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <h3 className="font-serif font-bold tracking-tight text-xl text-stone-900 dark:text-stone-100">
+                  Create New Password
                 </h3>
                 <p className="text-xs text-stone-500">
                   Code sent to <strong>{authEmail}</strong>
@@ -1148,7 +1255,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {devCodeHint && authMode === "verify" && (
+            {devCodeHint && (authMode === "verify" || authMode === "reset") && (
               <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-medium">
                   <span>Demo OTP Code:</span>
@@ -1212,6 +1319,140 @@ export default function AccountPage() {
                         : "Resend Code"}
                     </button>
                   </div>
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-12 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {authLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Verify & Continue</span>}
+                  </button>
+                </div>
+              ) : authMode === "forgot" ? (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                      Registered Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="patron@example.com"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      required
+                      className="w-full h-12 px-4 text-sm bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("login");
+                        setAuthError("");
+                        setAuthSuccess("");
+                        setDevCodeHint("");
+                      }}
+                      className="text-stone-500 hover:underline cursor-pointer"
+                    >
+                      ← Back to Sign In
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-12 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {authLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Send Reset Code</span>}
+                  </button>
+                </div>
+              ) : authMode === "reset" ? (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                      Enter 6-Digit Reset Code *
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="123456"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                      className="w-full text-center text-xl tracking-[0.4em] font-bold h-12 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      autoFocus
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                      New Password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showResetPassword ? "text" : "password"}
+                        placeholder="At least 6 characters"
+                        value={newResetPassword}
+                        onChange={(e) => setNewResetPassword(e.target.value)}
+                        required
+                        className="w-full h-12 px-4 pr-10 text-sm bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowResetPassword(!showResetPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
+                      >
+                        {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                      Confirm New Password *
+                    </label>
+                    <input
+                      type={showResetPassword ? "text" : "password"}
+                      placeholder="Re-type new password"
+                      value={confirmResetPassword}
+                      onChange={(e) => setConfirmResetPassword(e.target.value)}
+                      required
+                      className="w-full h-12 px-4 text-sm bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("login");
+                        setAuthError("");
+                        setAuthSuccess("");
+                        setDevCodeHint("");
+                      }}
+                      className="text-stone-500 hover:underline cursor-pointer"
+                    >
+                      ← Back to Sign In
+                    </button>
+                    <button
+                      type="button"
+                      disabled={resendCooldown > 0 || resendLoading}
+                      onClick={handleResendAuthCode}
+                      className={`font-semibold transition-colors ${
+                        resendCooldown > 0 || resendLoading
+                          ? "text-stone-400 dark:text-stone-600 cursor-not-allowed"
+                          : "text-[#A64732] dark:text-[#E07A5F] hover:underline cursor-pointer"
+                      }`}
+                    >
+                      {resendLoading
+                        ? "Sending..."
+                        : resendCooldown > 0
+                        ? `Resend Code (${resendCooldown}s)`
+                        : "Resend Code"}
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-12 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {authLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Update Password & Sign In</span>}
+                  </button>
                 </div>
               ) : (
                 <>
@@ -1246,9 +1487,25 @@ export default function AccountPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
-                      Password *
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                        Password *
+                      </label>
+                      {authMode === "login" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode("forgot");
+                            setAuthError("");
+                            setAuthSuccess("");
+                            setDevCodeHint("");
+                          }}
+                          className="text-[11px] text-[#A64732] dark:text-[#E07A5F] hover:underline font-semibold cursor-pointer"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="password"
                       placeholder="Minimum 6 characters"
@@ -1258,24 +1515,22 @@ export default function AccountPage() {
                       className="w-full h-12 px-4 text-sm bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                   </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-12 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {authLoading ? (
+                      <RefreshCw className="w-4 h-4 animate-spin mx-auto" />
+                    ) : authMode === "login" ? (
+                      "Sign In"
+                    ) : (
+                      "Send Verification Code"
+                    )}
+                  </button>
                 </>
               )}
-
-              <button
-                type="submit"
-                disabled={authLoading}
-                className="w-full h-12 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {authLoading ? (
-                  <RefreshCw className="w-4 h-4 animate-spin mx-auto" />
-                ) : authMode === "login" ? (
-                  "Sign In"
-                ) : authMode === "register" ? (
-                  "Send Verification Code"
-                ) : (
-                  "Verify Code"
-                )}
-              </button>
             </form>
 
             <div className="pt-4 border-t border-stone-100 dark:border-stone-800 text-center">

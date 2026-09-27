@@ -18,6 +18,8 @@ import {
   KeyRound,
   AlertCircle,
   Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { notifyAuthChange } from "@/lib/auth-client";
 
@@ -59,9 +61,12 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   // Inline auth states if user not logged in
-  const [authMode, setAuthMode] = useState<"login" | "register" | "verify">("login");
+  const [authMode, setAuthMode] = useState<"login" | "register" | "verify" | "forgot" | "reset">("login");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [newResetPassword, setNewResetPassword] = useState("");
+  const [confirmResetPassword, setConfirmResetPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [authName, setAuthName] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [devCodeHint, setDevCodeHint] = useState("");
@@ -249,8 +254,10 @@ export default function CheckoutPage() {
     setAuthError("");
     setAuthSuccess("");
 
+    const endpoint = authMode === "reset" ? "/api/auth/forgot-password" : "/api/auth/resend-code";
+
     try {
-      const res = await fetch("/api/auth/resend-code", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authEmail }),
@@ -268,6 +275,84 @@ export default function CheckoutPage() {
       setAuthError("Failed to resend verification code. Please check your connection.");
     } finally {
       setResendLoading(false);
+    }
+  };
+
+  const handleInlineForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthSuccess("");
+    setAuthLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 429) {
+          setAuthMode("reset");
+          setAuthError(data.error || "Please wait before requesting a new code.");
+          if (data.retryAfter) setResendCooldown(data.retryAfter);
+          setDevCodeHint(data.devCode || "");
+        } else {
+          setAuthError(data.error || "Failed to process password reset request.");
+        }
+      } else {
+        setAuthMode("reset");
+        setAuthSuccess(data.message || "A 6-digit reset code has been sent.");
+        setDevCodeHint(data.devCode || "");
+        setResendCooldown(data.cooldown || 60);
+      }
+    } catch {
+      setAuthError("Network error. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleInlineResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthSuccess("");
+
+    if (!newResetPassword || newResetPassword.length < 6) {
+      setAuthError("New password must be at least 6 characters long.");
+      return;
+    }
+    if (newResetPassword !== confirmResetPassword) {
+      setAuthError("Passwords do not match. Please re-enter.");
+      return;
+    }
+    if (!verificationCode || verificationCode.trim().length !== 6) {
+      setAuthError("Please enter the 6-digit reset code.");
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: authEmail,
+          code: verificationCode,
+          newPassword: newResetPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAuthError(data.error || "Failed to reset password.");
+      } else {
+        if (data.user) notifyAuthChange(data.user);
+        await checkUser();
+      }
+    } catch {
+      setAuthError("Network error. Please try again.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -501,19 +586,25 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-[#A64732] dark:text-[#E07A5F]" />
                   <h3 className="font-bold tracking-tight text-lg text-[#181513] dark:text-[#FAF8F5]">
-                    Customer Sign In
+                    {authMode === "forgot"
+                      ? "Reset Password"
+                      : authMode === "reset"
+                      ? "Create New Password"
+                      : authMode === "verify"
+                      ? "Verify Email"
+                      : "Customer Sign In"}
                   </h3>
                 </div>
                 <div className="flex gap-2 text-xs font-medium">
                   <button
                     onClick={() => { setAuthMode("login"); setAuthError(""); setAuthSuccess(""); setDevCodeHint(""); }}
-                    className={`px-3 py-1 rounded-full ${authMode === "login" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
+                    className={`px-3 py-1 rounded-full ${authMode === "login" || authMode === "forgot" || authMode === "reset" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
                   >
                     Sign In
                   </button>
                   <button
                     onClick={() => { setAuthMode("register"); setAuthError(""); setAuthSuccess(""); setDevCodeHint(""); }}
-                    className={`px-3 py-1 rounded-full ${authMode === "register" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
+                    className={`px-3 py-1 rounded-full ${authMode === "register" || authMode === "verify" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
                   >
                     Register
                   </button>
@@ -532,7 +623,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {devCodeHint && authMode === "verify" && (
+              {devCodeHint && (authMode === "verify" || authMode === "reset") && (
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-medium rounded-xl space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Demo OTP Code:</span>
@@ -567,9 +658,23 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] mb-1">
-                      Password
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5]">
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode("forgot");
+                          setAuthError("");
+                          setAuthSuccess("");
+                          setDevCodeHint("");
+                        }}
+                        className="text-[10px] font-medium text-[#A64732] dark:text-[#E07A5F] hover:underline cursor-pointer"
+                      >
+                        Forgot?
+                      </button>
+                    </div>
                     <input
                       type="password"
                       required
@@ -585,6 +690,147 @@ export default function CheckoutPage() {
                     className="w-full h-11 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-widest hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors"
                   >
                     {authLoading ? "Authenticating..." : "Sign In & Continue"}
+                  </button>
+                </form>
+              )}
+
+              {authMode === "forgot" && (
+                <form onSubmit={handleInlineForgotPassword} className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] mb-1">
+                      Your Account Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="w-full h-10 px-3 text-xs bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("login");
+                        setAuthError("");
+                        setAuthSuccess("");
+                      }}
+                      className="text-[#786F64] dark:text-[#A89F91] hover:underline cursor-pointer"
+                    >
+                      ← Back to Sign In
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-11 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-widest hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors"
+                  >
+                    {authLoading ? "Sending OTP..." : "Send Reset Code (OTP)"}
+                  </button>
+                </form>
+              )}
+
+              {authMode === "reset" && (
+                <form onSubmit={handleInlineResetPassword} className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5]">
+                        6-Digit Reset Code
+                      </label>
+                      <span className="text-[10px] text-[#786F64] dark:text-[#A89F91]">
+                        Valid for 10 minutes
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 mb-2 leading-relaxed">
+                      📬 Can&apos;t find the email? Please check your <strong>Spam / Junk folder</strong> or Promotions tab.
+                    </p>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="123456"
+                      className="w-full h-11 text-center font-bold tracking-[0.5em] text-sm bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] mb-1">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showResetPassword ? "text" : "password"}
+                        required
+                        value={newResetPassword}
+                        onChange={(e) => setNewResetPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        className="w-full h-10 px-3 pr-10 text-xs bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowResetPassword(!showResetPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"
+                      >
+                        {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#181513] dark:text-[#FAF8F5] mb-1">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type={showResetPassword ? "text" : "password"}
+                      required
+                      value={confirmResetPassword}
+                      onChange={(e) => setConfirmResetPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      className="w-full h-10 px-3 text-xs bg-[#F2EDE4] dark:bg-[#12100E] border border-[#DDD5C7] dark:border-[#2E2925] rounded-xl text-[#181513] dark:text-[#FAF8F5] focus:outline-none focus:border-[#181513] dark:focus:border-[#FAF8F5]"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("forgot");
+                        setAuthError("");
+                        setAuthSuccess("");
+                      }}
+                      className="text-[#786F64] dark:text-[#A89F91] hover:underline cursor-pointer"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={resendCooldown > 0 || resendLoading}
+                      onClick={handleInlineResendCode}
+                      className={`font-semibold transition-colors ${
+                        resendCooldown > 0 || resendLoading
+                          ? "text-[#786F64] dark:text-[#A89F91] cursor-not-allowed opacity-60"
+                          : "text-[#A64732] dark:text-[#E07A5F] hover:underline cursor-pointer"
+                      }`}
+                    >
+                      {resendLoading
+                        ? "Sending..."
+                        : resendCooldown > 0
+                        ? `Resend Code (${resendCooldown}s)`
+                        : "Resend Code"}
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full h-11 bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513] rounded-xl text-xs font-semibold uppercase tracking-widest hover:bg-[#A64732] dark:hover:bg-[#E07A5F] dark:hover:text-white transition-colors"
+                  >
+                    {authLoading ? "Resetting Password..." : "Reset Password & Continue"}
                   </button>
                 </form>
               )}
