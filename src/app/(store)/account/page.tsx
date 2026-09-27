@@ -309,7 +309,7 @@ export default function AccountPage() {
           if (data.requiresVerification) {
             setAuthMode("verify");
             setAuthError(data.error || "Email verification required.");
-            if (data.devCode) setDevCodeHint(data.devCode);
+            setDevCodeHint(data.devCode || "");
             setResendCooldown(data.cooldown || 60);
           } else {
             setAuthError(data.error || "Invalid credentials.");
@@ -342,16 +342,14 @@ export default function AccountPage() {
           if (res.status === 429) {
             setAuthError(data.error || "Rate limit reached. Please wait before retrying.");
             if (data.retryAfter) setResendCooldown(data.retryAfter);
-            if (data.devCode) setDevCodeHint(data.devCode);
+            setDevCodeHint(data.devCode || "");
             setAuthMode("verify");
           } else {
             setAuthError(data.error || "Registration failed.");
           }
         } else {
           setAuthSuccess(data.message || "Verification code sent to your email.");
-          if (data.devCode) {
-            setDevCodeHint(data.devCode);
-          }
+          setDevCodeHint(data.devCode || "");
           setResendCooldown(data.cooldown || 60);
           setAuthMode("verify");
         }
@@ -406,7 +404,7 @@ export default function AccountPage() {
           setResendCooldown(data.retryAfter);
         }
       } else {
-        if (data.devCode) setDevCodeHint(data.devCode);
+        setDevCodeHint(data.devCode || "");
         setAuthSuccess(data.message || "New verification code dispatched.");
         setResendCooldown(data.cooldown || 60);
       }
@@ -1087,6 +1085,7 @@ export default function AccountPage() {
                     setAuthMode("login");
                     setAuthError("");
                     setAuthSuccess("");
+                    setDevCodeHint("");
                   }}
                   className={`py-2.5 px-3 rounded-lg text-center transition-all cursor-pointer ${
                     authMode === "login"
@@ -1102,6 +1101,7 @@ export default function AccountPage() {
                     setAuthMode("register");
                     setAuthError("");
                     setAuthSuccess("");
+                    setDevCodeHint("");
                   }}
                   className={`py-2.5 px-3 rounded-lg text-center transition-all cursor-pointer ${
                     authMode === "register"
@@ -1126,6 +1126,11 @@ export default function AccountPage() {
                 <p className="text-[11px] text-stone-400">
                   Code valid for 10 minutes.
                 </p>
+                <div className="pt-1">
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 inline-block text-center leading-relaxed">
+                    📬 Can&apos;t find the email? Please check your <strong>Spam / Junk folder</strong> or Promotions tab.
+                  </p>
+                </div>
               </div>
             )}
 

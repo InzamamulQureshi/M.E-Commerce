@@ -77,10 +77,7 @@ export async function POST(request: Request) {
         }
       }
 
-      let emailResult: { success: boolean; isSandboxRestriction?: boolean; error?: string } = {
-        success: false,
-        isSandboxRestriction: false,
-      };
+      let emailFailed = false;
 
       if (!isRecentlySent || !codeToUse) {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -92,14 +89,17 @@ export async function POST(request: Request) {
           data: { verificationCode, verificationExpiresAt },
         });
 
-        emailResult = await sendVerificationEmail({
+        const emailResult = await sendVerificationEmail({
           email: user.email,
           code: verificationCode,
           userName: user.name,
         });
+
+        emailFailed = !emailResult.success;
       }
 
-      const includeDevCode = !isEmailConfigured() || !emailResult.success || !isRecentlySent;
+      // ONLY include devCode if email is not configured OR if delivery failed (e.g. sandbox restriction)
+      const includeDevCode = !isEmailConfigured() || emailFailed;
 
       return NextResponse.json(
         {

@@ -226,7 +226,7 @@ export default function CheckoutPage() {
           setAuthMode("verify");
           setAuthError(data.error || "Rate limit reached. Please wait before retrying.");
           if (data.retryAfter) setResendCooldown(data.retryAfter);
-          if (data.devCode) setDevCodeHint(data.devCode);
+          setDevCodeHint(data.devCode || "");
         } else {
           setAuthError(data.error || "Registration failed");
         }
@@ -260,7 +260,7 @@ export default function CheckoutPage() {
         setAuthError(data.error || "Failed to resend code.");
         if (data.retryAfter) setResendCooldown(data.retryAfter);
       } else {
-        if (data.devCode) setDevCodeHint(data.devCode);
+        setDevCodeHint(data.devCode || "");
         setAuthSuccess(data.message || "New verification code dispatched.");
         setResendCooldown(data.cooldown || 60);
       }
@@ -506,13 +506,13 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex gap-2 text-xs font-medium">
                   <button
-                    onClick={() => { setAuthMode("login"); setAuthError(""); }}
+                    onClick={() => { setAuthMode("login"); setAuthError(""); setAuthSuccess(""); setDevCodeHint(""); }}
                     className={`px-3 py-1 rounded-full ${authMode === "login" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
                   >
                     Sign In
                   </button>
                   <button
-                    onClick={() => { setAuthMode("register"); setAuthError(""); }}
+                    onClick={() => { setAuthMode("register"); setAuthError(""); setAuthSuccess(""); setDevCodeHint(""); }}
                     className={`px-3 py-1 rounded-full ${authMode === "register" ? "bg-[#181513] dark:bg-[#FAF8F5] text-[#FAF8F5] dark:text-[#181513]" : "text-[#786F64] dark:text-[#A89F91] hover:text-[#181513] dark:hover:text-[#FAF8F5]"}`}
                   >
                     Register
@@ -651,6 +651,9 @@ export default function CheckoutPage() {
                         Valid for 10 minutes
                       </span>
                     </div>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 mb-2 leading-relaxed">
+                      📬 Can&apos;t find the email? Please check your <strong>Spam / Junk folder</strong> or Promotions tab.
+                    </p>
                     <input
                       type="text"
                       required

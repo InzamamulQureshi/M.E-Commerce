@@ -67,7 +67,7 @@ export async function POST(request: Request) {
               requiresVerification: true,
               email: cleanEmail,
               retryAfter: waitSeconds,
-              devCode: existing.verificationCode || undefined,
+              devCode: isEmailConfigured() ? undefined : (existing.verificationCode || undefined),
             },
             { status: 429 }
           );
