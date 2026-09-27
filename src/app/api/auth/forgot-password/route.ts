@@ -99,14 +99,12 @@ export async function POST(request: Request) {
       subject: `${verificationCode} is your ${storeName} password reset code`,
     });
 
-    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
+    const includeDevCode = isDemoOtpEnabled() || emailResult.isSandboxRestriction || !isEmailConfigured() || !emailResult.success;
 
     let message = `A 6-digit password reset code has been sent to ${cleanEmail}.`;
     if (!emailResult.success) {
       message = emailResult.isSandboxRestriction
-        ? (includeDevCode
-            ? `Resend sandbox testing active: reset code provided directly on screen for testing.`
-            : `Testing mode active: Please verify your recipient domain on Resend to receive emails.`)
+        ? `Resend sandbox testing active: reset code provided directly on screen for testing.`
         : `A 6-digit password reset code has been generated.`;
     }
 

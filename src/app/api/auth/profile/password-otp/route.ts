@@ -59,7 +59,7 @@ export async function POST() {
       userName: user.name,
     });
 
-    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
+    const includeDevCode = isDemoOtpEnabled() || emailResult.isSandboxRestriction || !isEmailConfigured() || !emailResult.success;
 
     return NextResponse.json({
       success: true,

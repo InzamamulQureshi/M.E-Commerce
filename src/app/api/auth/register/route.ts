@@ -114,14 +114,12 @@ export async function POST(request: Request) {
       userName: cleanName,
     });
 
-    const includeDevCode = isDemoOtpEnabled() && (!isEmailConfigured() || !emailResult.success);
+    const includeDevCode = isDemoOtpEnabled() || emailResult.isSandboxRestriction || !isEmailConfigured() || !emailResult.success;
 
     let message = `A 6-digit verification code has been sent to ${cleanEmail}.`;
     if (!emailResult.success) {
       message = emailResult.isSandboxRestriction
-        ? (includeDevCode
-            ? `Resend sandbox testing active: code provided directly on screen for testing.`
-            : `Testing mode active: Please verify your recipient domain on Resend to receive emails.`)
+        ? `Resend sandbox testing active: code provided directly on screen for testing.`
         : `A 6-digit verification code has been generated.`;
     }
 

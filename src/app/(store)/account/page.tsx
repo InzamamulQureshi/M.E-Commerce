@@ -180,6 +180,7 @@ export default function AccountPage() {
   const [profileForgotCodeSent, setProfileForgotCodeSent] = useState(false);
   const [profileForgotSending, setProfileForgotSending] = useState(false);
   const [profileForgotCooldown, setProfileForgotCooldown] = useState(0);
+  const [profileForgotDevCode, setProfileForgotDevCode] = useState("");
 
   // Account Deletion States
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -721,6 +722,9 @@ export default function AccountPage() {
         setProfileForgotCodeSent(true);
         setPwMsg(data.message || `A 6-digit reset code has been dispatched to ${user.email}`);
         setProfileForgotCooldown(data.cooldown || 60);
+        if (data.devCode) {
+          setProfileForgotDevCode(data.devCode);
+        }
       }
     } catch {
       setPwError("Network error. Could not dispatch reset code.");
@@ -1396,7 +1400,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {devCodeHint && process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true" && (authMode === "verify" || authMode === "reset") && (
+            {devCodeHint && (authMode === "verify" || authMode === "reset") && (
               <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-xl text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-medium">
                   <span>Demo OTP Code:</span>
@@ -2801,6 +2805,19 @@ export default function AccountPage() {
                         <p className="text-[10.5px] text-stone-500">
                           Check your inbox for the 6-digit confirmation code.
                         </p>
+                        {otpDevCode && (
+                          <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-lg text-xs flex items-center justify-between font-medium">
+                            <span>Demo OTP:</span>
+                            <button
+                              type="button"
+                              onClick={() => setPasswordOtp(otpDevCode)}
+                              className="font-bold font-mono tracking-widest text-xs bg-amber-200/80 dark:bg-amber-800/60 px-2 py-0.5 rounded hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors cursor-pointer"
+                              title="Click to auto-fill"
+                            >
+                              {otpDevCode}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -2871,6 +2888,19 @@ export default function AccountPage() {
                             className="w-full text-center text-lg tracking-[0.3em] font-bold font-mono h-11 bg-white dark:bg-[#12100E] rounded-xl border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
                             autoFocus
                           />
+                          {profileForgotDevCode && (
+                            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-300 rounded-lg text-xs flex items-center justify-between font-medium">
+                              <span>Demo Reset Code:</span>
+                              <button
+                                type="button"
+                                onClick={() => setProfileForgotCode(profileForgotDevCode)}
+                                className="font-bold font-mono tracking-widest text-xs bg-amber-200/80 dark:bg-amber-800/60 px-2 py-0.5 rounded hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors cursor-pointer"
+                                title="Click to auto-fill"
+                              >
+                                {profileForgotDevCode}
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         <div>

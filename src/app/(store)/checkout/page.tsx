@@ -623,7 +623,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {devCodeHint && process.env.NEXT_PUBLIC_ENABLE_DEMO_OTP === "true" && (authMode === "verify" || authMode === "reset") && (
+              {devCodeHint && (authMode === "verify" || authMode === "reset") && (
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300 text-xs font-medium rounded-xl space-y-1">
                   <div className="flex items-center justify-between">
                     <span>Demo OTP Code:</span>
