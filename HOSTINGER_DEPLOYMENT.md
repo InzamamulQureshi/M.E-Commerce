@@ -1,101 +1,139 @@
-# Hostinger Production Deployment Guide for M.E-Commerce
+# Hostinger Deployment Guide
 
-This guide details how to deploy **M.E-Commerce** on **Hostinger Web Hosting** with Hostinger MySQL, ensuring full security and zero client-side secret leakage.
-
----
-
-## 1. Create Hostinger MySQL Database
-
-1. Log in to your **Hostinger hPanel**.
-2. Navigate to **Databases** ➔ **MySQL Databases**.
-3. Create a new database:
-   - **Database Name:** e.g., `u123456789_mecommerce`
-   - **Username:** e.g., `u123456789_mecommerce_user`
-   - **Password:** Enter a strong password (e.g. `MeCommerceAdmin#2026`)
-4. Note down your Hostinger MySQL details (Hostinger typically uses `localhost` or `127.0.0.1` for local database connections within the same hosting account).
+This guide covers deploying **M.E-Commerce** on **Hostinger VPS** (recommended) or **Hostinger Shared/Cloud Web Hosting**.
 
 ---
 
-## 2. Configure Environment Variables (Strictly Server-Side)
+## Method 1: Hostinger VPS (Recommended)
 
-In Hostinger File Manager or Node.js configuration, create/update `.env`:
+Using a VPS with Dokploy or Docker provides dedicated server resources and eliminates serverless database connection limits.
 
-```env
-# Hostinger MySQL Connection
-DATABASE_URL="mysql://u123456789_mecommerce_user:MeCommerceAdmin#2026@localhost:3306/u123456789_mecommerce"
-
-# Secret Authentication Keys (Kept strictly on the server)
-BETTER_AUTH_SECRET="generate_a_long_random_64_character_secret"
-ADMIN_SECRET_KEY="your_secret_admin_master_passcode"
-ADMIN_EMAIL="admin@mecommerce.dev"
-
-# Public Branding & Contact
-NEXT_PUBLIC_STORE_NAME="M.E-Commerce"
-NEXT_PUBLIC_STORE_TAGLINE="Modern, Minimalist & Modular E-Commerce"
-NEXT_PUBLIC_INSTAGRAM="https://instagram.com/mecommerce.official"
-NEXT_PUBLIC_WHATSAPP="+919876543210"
-NEXT_PUBLIC_UPI_ID="mecommerce@oksbi"
-NEXT_PUBLIC_UPI_NAME="M.E-Commerce Studio"
+### 1. Connect to VPS
+```bash
+ssh root@YOUR_VPS_IP
 ```
 
-> **Security Note:** None of the database credentials or auth secrets are prefixed with `NEXT_PUBLIC_`. Next.js strictly compiles these only into the private server runtime, guaranteeing that no database passwords or admin secrets ever leak into client browser JavaScript.
+### 2. Install Dokploy (Application & Database Manager)
+```bash
+curl -sSL https://dokploy.com/install.sh | sh
+```
+Open `http://YOUR_VPS_IP:3000` to set up your Dokploy administrator account.
+
+### 3. Create MySQL Database in Dokploy
+1. In Dokploy, go to **Databases** ➔ **Create Database** ➔ **MySQL**.
+2. Set database name (`mecommerce`), user (`mecommerce_user`), and password.
+3. Expose port `3306` if connecting from external tools.
+4. Database connection string:
+   ```
+   mysql://mecommerce_user:YOUR_PASSWORD@localhost:3306/mecommerce?connection_limit=10&pool_timeout=30
+   ```
+
+### 4. Deploy the Application
+1. In Dokploy, go to **Applications** ➔ **Create Application**.
+2. Connect your GitHub repository (`InzamamulQureshi/M.E-Commerce`), branch `main`.
+3. Set Build Type to `Nixpacks` or `Dockerfile`.
+4. Add your production environment variables (see below).
+5. In **Domains**, enter your domain name. Dokploy automatically generates a free Let's Encrypt SSL certificate.
+6. Click **Deploy**.
 
 ---
 
-## 3. Setup Hostinger Node.js Application
+## Method 2: Hostinger Shared/Cloud Hosting (hPanel)
 
+If you are using Hostinger Web Hosting with hPanel and Node.js support:
+
+### 1. Create MySQL Database
+1. In hPanel, go to **Databases** ➔ **MySQL Databases**.
+2. Create a new database:
+   - Database Name: `u123456789_mecommerce`
+   - Username: `u123456789_mecommerce_user`
+   - Password: `your_strong_password`
+3. Connection string format:
+   ```
+   mysql://u123456789_mecommerce_user:your_strong_password@localhost:3306/u123456789_mecommerce
+   ```
+
+### 2. Configure Node.js Application
 1. In hPanel, go to **Advanced** ➔ **Node.js**.
 2. Click **Create Application**:
-   - **Node.js Version:** Select `20.x` or `22.x`
-   - **Application Root:** `/home/u123456789/domains/yourdomain.com/public_html`
-   - **Application Startup File:** `node_modules/next/dist/bin/next` or `npm` script
-   - **Application Mode:** `Production`
-3. Upload the project files (or clone via Git in hPanel).
-4. Run npm install:
+   - Node.js Version: `20.x`
+   - Application Root: `/home/u123456789/domains/yourdomain.com/public_html`
+   - Application Mode: `Production`
+3. Upload project files (via Git integration or File Manager).
+4. In Web Terminal or SSH:
    ```bash
    npm install
    ```
 
+### 3. Initialize Database
+```bash
+# Push schema tables
+npm run db:push
+
+# (Optional) Seed initial data
+npm run db:seed
+```
+
+### 4. Build and Start
+```bash
+npm run build
+npm run start
+```
+In hPanel, click **Restart Application**.
+
 ---
 
-## 4. Push Database Schema & Seed Initial Inventory
+## Production Environment Variables
 
-In the Hostinger SSH Terminal or Web Terminal:
+Configure these in your Dokploy application or Hostinger `.env` file:
 
-```bash
-# Push Prisma schema to Hostinger MySQL
-npx prisma db push
+```env
+# Database
+DATABASE_URL="mysql://USER:PASSWORD@HOST:3306/DATABASE?connection_limit=10&pool_timeout=30"
 
-# Seed initial catalog, categories, and admin user
-node prisma/dist/seed.js
+# Authentication Secrets
+BETTER_AUTH_SECRET="long_random_64_character_string"
+ADMIN_SECRET_KEY="your_secure_admin_passcode"
+ADMIN_EMAIL="admin@mecommerce.dev"
+
+# Store Information
+NEXT_PUBLIC_STORE_NAME="M.E-Commerce"
+NEXT_PUBLIC_STORE_TAGLINE="Modern E-Commerce Studio"
+NEXT_PUBLIC_SITE_URL="https://yourstore.com"
+NEXT_PUBLIC_UPI_ID="store@oksbi"
+NEXT_PUBLIC_UPI_NAME="Store Studio"
+NEXT_PUBLIC_WHATSAPP="+919876543210"
+NEXT_PUBLIC_INSTAGRAM="https://instagram.com/store"
+
+# Payment Gateways (Razorpay)
+RAZORPAY_KEY_ID="rzp_live_..."
+RAZORPAY_KEY_SECRET="your_razorpay_secret"
+NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_live_..."
+
+# Email (Resend)
+RESEND_API_KEY="re_..."
+EMAIL_FROM="Store <orders@yourstore.com>"
+
+# Production Flags
+ENABLE_DEMO_ADMIN="false"
+NEXT_PUBLIC_ENABLE_DEMO_ADMIN="false"
+ENABLE_DEMO_OTP="false"
+NEXT_PUBLIC_ENABLE_DEMO_OTP="false"
 ```
 
 ---
 
-## 5. Build and Start
+## SSL Configuration
 
-1. Compile the Next.js production build:
-   ```bash
-   npm run build
-   ```
-2. Start the application:
-   ```bash
-   npm run start
-   ```
-3. In hPanel Node.js section, click **Restart Application**.
+1. In Hostinger hPanel, go to **Security** ➔ **SSL**.
+2. Select your domain and install the free Let's Encrypt certificate.
+3. Enable **Force HTTPS**.
 
 ---
 
-## 6. Accessing the Admin Portal
+## Admin Portal Access
 
-Manage all products, subcategories, pricing, stock, coupons, and orders directly via the admin portal:
-
-- **Admin Portal URL:** `https://yourdomain.com/admin/login`
-- **Master Passcode:** Defined in `ADMIN_SECRET_KEY` in your `.env`
-- **Default Admin Login:** `admin@mecommerce.dev` / `mecommerce_admin_2026`
-
-Store owners can:
-- Configure live store branding, SVG favicons, social OpenGraph cards, and accent colors without code changes.
-- Add and edit catalog items with photos, dimensions, materials, and customization switches.
-- Create categories and subcategories dynamically.
-- View and manage orders, update tracking numbers, and verify payments.
+Once deployed, access the admin dashboard at:
+- **URL**: `https://yourstore.com/admin/login`
+- **Master Passcode**: Value of `ADMIN_SECRET_KEY` in `.env`
+- **Default Account**: `admin@mecommerce.dev` / `mecommerce_admin_2026`
