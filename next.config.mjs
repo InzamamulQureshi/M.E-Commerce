@@ -4,8 +4,8 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   experimental: {
-    optimizePackageImports: ["lucide-react"],
-    serverComponentsExternalPackages: ["@resvg/resvg-js"],
+    optimizePackageImports: ["lucide-react", "@react-email/components"],
+    serverComponentsExternalPackages: ["@resvg/resvg-js", "razorpay", "@react-email/render"],
   },
   images: {
     remotePatterns: [

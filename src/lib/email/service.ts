@@ -1,4 +1,6 @@
+import React from "react";
 import { Resend } from "resend";
+import { render } from "@react-email/render";
 import { VerificationCodeEmail } from "@/components/emails/VerificationCodeEmail";
 import { OrderConfirmationEmail } from "@/components/emails/OrderConfirmationEmail";
 
@@ -56,15 +58,19 @@ export async function sendVerificationEmail({
     const resend = new Resend(apiKey);
     const from = getEmailFromAddress();
 
+    const html = await render(
+      React.createElement(VerificationCodeEmail, {
+        code,
+        userName,
+        storeName,
+      })
+    );
+
     const result = await resend.emails.send({
       from,
       to: [email],
       subject: `${code} is your ${storeName} verification code`,
-      react: VerificationCodeEmail({
-        code,
-        userName,
-        storeName,
-      }),
+      html,
     });
 
     if (result.error) {
@@ -123,11 +129,8 @@ export async function sendOrderConfirmationEmail(
     const from = getEmailFromAddress();
     const storeName = params.storeName || "M.E-Commerce";
 
-    const result = await resend.emails.send({
-      from,
-      to: [params.email],
-      subject: `Order Confirmed: #${params.orderNumber} - ${storeName}`,
-      react: OrderConfirmationEmail({
+    const html = await render(
+      React.createElement(OrderConfirmationEmail, {
         orderNumber: params.orderNumber,
         customerName: params.customerName,
         items: params.items,
@@ -142,7 +145,14 @@ export async function sendOrderConfirmationEmail(
         state: params.state,
         postalCode: params.postalCode,
         storeName,
-      }),
+      })
+    );
+
+    const result = await resend.emails.send({
+      from,
+      to: [params.email],
+      subject: `Order Confirmed: #${params.orderNumber} - ${storeName}`,
+      html,
     });
 
     if (result.error) {

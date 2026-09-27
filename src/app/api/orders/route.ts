@@ -265,91 +265,86 @@ export async function POST(request: Request) {
     const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     const orderNumber = `FF-${timestamp}-${randSuffix}`;
 
-    // Execute order creation, stock deduction, coupon count, and user sync in an atomic transaction
-    const order = await db.$transaction(async (tx) => {
-      // 1. Create Order and OrderItems
-      const createdOrder = await tx.order.create({
-        data: {
-          orderNumber,
-          userId: user.id,
-          customerName: customerName.trim(),
-          customerEmail: customerEmail.toLowerCase().trim(),
-          customerPhone: customerPhone.trim(),
-          shippingAddress: shippingAddress.trim(),
-          city: city?.trim() || "",
-          state: state?.trim() || "",
-          postalCode: postalCode?.trim() || "",
-          subtotal,
-          discountTotal,
-          shippingFee,
-          finalTotal,
-          status: orderStatus,
-          paymentMethod: paymentMethod as PaymentMethod,
-          paymentStatus,
-          paymentRef: paymentRef || null,
-          orderNotes: orderNotes || null,
-          couponCode: appliedCoupon ? appliedCoupon.code : null,
-          items: {
-            create: verifiedItems,
+    // Execute order creation and stock deduction in an atomic transaction with generous timeout for remote DB
+    const order = await db.$transaction(
+      async (tx) => {
+        // 1. Create Order and OrderItems
+        const createdOrder = await tx.order.create({
+          data: {
+            orderNumber,
+            userId: user.id,
+            customerName: customerName.trim(),
+            customerEmail: customerEmail.toLowerCase().trim(),
+            customerPhone: customerPhone.trim(),
+            shippingAddress: shippingAddress.trim(),
+            city: city?.trim() || "",
+            state: state?.trim() || "",
+            postalCode: postalCode?.trim() || "",
+            subtotal,
+            discountTotal,
+            shippingFee,
+            finalTotal,
+            status: orderStatus,
+            paymentMethod: paymentMethod as PaymentMethod,
+            paymentStatus,
+            paymentRef: paymentRef || null,
+            orderNotes: orderNotes || null,
+            couponCode: appliedCoupon ? appliedCoupon.code : null,
+            items: {
+              create: verifiedItems,
+            },
           },
-        },
-        include: {
-          items: true,
-        },
-      });
-
-      // 2. Decrement inventory stock atomically, ensuring stock never drops below 0
-      for (const item of verifiedItems) {
-        const currentProd = await tx.product.findUnique({
-          where: { id: item.productId },
-          select: { id: true, title: true, stock: true },
+          include: {
+            items: true,
+          },
         });
 
-        if (!currentProd || currentProd.stock < item.quantity) {
-          throw new Error(
-            `"${currentProd?.title || "Item"}" no longer has sufficient stock available.`
-          );
+        // 2. Decrement inventory stock concurrently
+        await Promise.all(
+          verifiedItems.map((item) =>
+            tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: { decrement: item.quantity },
+              },
+            })
+          )
+        );
+
+        // 3. Increment coupon usage and auto-disable if quota is hit
+        if (appliedCoupon) {
+          const newCount = (appliedCoupon.usedCount || 0) + 1;
+          const reachedLimit = appliedCoupon.usageLimit && newCount >= appliedCoupon.usageLimit;
+          await tx.coupon.update({
+            where: { id: appliedCoupon.id },
+            data: {
+              usedCount: { increment: 1 },
+              ...(reachedLimit ? { isActive: false } : {}),
+            },
+          });
         }
 
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: { decrement: item.quantity },
-          },
-        });
+        return createdOrder;
+      },
+      {
+        maxWait: 10000,
+        timeout: 25000,
       }
+    );
 
-      // 3. Increment coupon usage and auto-disable if quota is hit
-      if (appliedCoupon) {
-        const newCount = (appliedCoupon.usedCount || 0) + 1;
-        const reachedLimit = appliedCoupon.usageLimit && newCount >= appliedCoupon.usageLimit;
-        await tx.coupon.update({
-          where: { id: appliedCoupon.id },
-          data: {
-            usedCount: { increment: 1 },
-            ...(reachedLimit ? { isActive: false } : {}),
-          },
-        });
-      }
-
-      // 4. Update default phone and shipping address on user profile
-      try {
-        await tx.user.update({
-          where: { id: user.id },
-          data: {
-            phone: customerPhone.trim(),
-            address: shippingAddress.trim(),
-            city: city?.trim() || null,
-            state: state?.trim() || null,
-            postalCode: postalCode?.trim() || null,
-          },
-        });
-      } catch {
-        // Non-fatal if user update fails
-      }
-
-      return createdOrder;
-    });
+    // 4. Update default phone and shipping address on user profile (non-blocking outside transaction)
+    db.user
+      .update({
+        where: { id: user.id },
+        data: {
+          phone: customerPhone.trim(),
+          address: shippingAddress.trim(),
+          city: city?.trim() || null,
+          state: state?.trim() || null,
+          postalCode: postalCode?.trim() || null,
+        },
+      })
+      .catch(() => {});
 
     // Send React Email order confirmation for offline/direct orders (UPI_QR, COD)
     if (order.paymentMethod !== "RAZORPAY" && order.paymentMethod !== "STRIPE") {

@@ -201,7 +201,7 @@ export async function PUT(request: Request) {
           },
         },
       });
-    });
+    }, { maxWait: 10000, timeout: 25000 });
 
     return NextResponse.json({
       success: true,
@@ -291,7 +291,7 @@ export async function DELETE(request: Request) {
       await tx.order.delete({
         where: { id },
       });
-    });
+    }, { maxWait: 10000, timeout: 25000 });
 
     return NextResponse.json({
       success: true,
