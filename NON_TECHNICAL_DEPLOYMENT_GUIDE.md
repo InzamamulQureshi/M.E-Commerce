@@ -2,7 +2,7 @@
 
 This guide is written for store owners, entrepreneurs, and clients who want to launch their store online without a technical background.
 
-![Storefront](./homepage_preview.png)
+![Storefront](./docs/images/mecommerce_storefront.png)
 
 ---
 
@@ -102,7 +102,7 @@ Click **Environment Variables** and add the following:
 - `BETTER_AUTH_SECRET` ➔ Type any long, random 64-character phrase (e.g. `my_super_secure_store_secret_phrase_2026_random_keys_xyz`).
 - `ADMIN_SECRET_KEY` ➔ Choose a secret admin passcode only you know (used to log into your dashboard).
 - `ADMIN_EMAIL` ➔ Enter your primary email address (e.g. `admin@yourstore.com`).
-- `NEXT_PUBLIC_STORE_NAME` ➔ The name of your brand (e.g. `The Fourfold`).
+- `NEXT_PUBLIC_STORE_NAME` ➔ The name of your brand (e.g. `M.E-Commerce`).
 
 #### Payments & Contact:
 - `NEXT_PUBLIC_UPI_ID` ➔ Your UPI ID for QR payments (e.g. `yourbrand@oksbi`).
@@ -146,7 +146,7 @@ Click **Environment Variables** and add the following:
 
 ## 4. First Things to Do After Launch
 
-![Admin Dashboard](./admin_dashboard_settings_tabs.png)
+![Admin Dashboard](./docs/images/mecommerce_admin_dashboard.png)
 
 1. **Log in to Admin**:
    Visit `https://yourdomain.com/admin/login` and log in with your `ADMIN_EMAIL` and `ADMIN_SECRET_KEY`.
@@ -154,7 +154,7 @@ Click **Environment Variables** and add the following:
    Go to **Settings** ➔ **Branding** to customize your store name, logo size, tagline, and contact info.
 3. **Set Up Shipping Rates**:
    Go to **Settings** ➔ **Shipping** to configure free shipping thresholds and delivery fees.
-   ![Shipping Settings](./settings_shipping_preview.png)
+   ![Admin Settings](./docs/images/mecommerce_admin_settings.png)
 4. **Add Your Products**:
    Go to **Products** ➔ **+ Add Product** to upload photos, descriptions, and prices.
 5. **Test a Checkout**:

@@ -2,7 +2,7 @@
 
 This guide explains how to manage day-to-day store operations, fulfill orders, manage catalog inventory, configure promotions, and update storefront content using the built-in Admin Portal.
 
-![Admin Dashboard](./admin_dashboard_settings_tabs.png)
+![Admin Dashboard](./docs/images/mecommerce_admin_dashboard.png)
 
 ---
 
@@ -24,7 +24,7 @@ This guide explains how to manage day-to-day store operations, fulfill orders, m
 ### Accessing the Portal
 Navigate to `/admin/login` on your domain (e.g. `https://yourstore.com/admin/login`).
 
-![Admin Login Form](./admin_settings_preview.png)
+![Admin Login Form](./docs/images/mecommerce_admin_login.png)
 
 ### Authentication Methods
 You can authenticate using either of two methods:
@@ -96,7 +96,7 @@ Click the **Print Packing Slip** button inside any order dossier to generate a c
 
 Navigate to **Admin** ➔ **Products** (`/admin/dashboard/products`).
 
-![Product Detail Preview](./pdp_batman_preview.png)
+![Product Detail Preview](./docs/images/mecommerce_product.png)
 
 ### Adding a New Product
 Click **+ Add Product** and fill in the details:
@@ -122,7 +122,7 @@ Under the **Customization Options** section, toggle features customers can selec
 
 Navigate to **Admin** ➔ **Categories** (`/admin/dashboard/categories`).
 
-![Megamenu Preview](./categories_megamenu_preview.png)
+![Catalog Preview](./docs/images/mecommerce_catalog.png)
 
 ### Managing Categories
 - **Add Category**: Enter category name, URL slug, and optional description.
@@ -176,7 +176,7 @@ Navigate to **Admin** ➔ **Reviews** (`/admin/dashboard/reviews`).
 
 Navigate to **Admin** ➔ **Settings** (`/admin/dashboard/settings`).
 
-![Settings Hub](./settings_hub_preview.png)
+![Settings Hub](./docs/images/mecommerce_admin_settings.png)
 
 The Settings Hub lets you change store branding, content, and policies without editing code:
 
@@ -212,12 +212,10 @@ The Settings Hub lets you change store branding, content, and policies without e
   - Set a maximum order limit for COD (e.g. `₹5,000`).
 
 ### 6. Shipping & Delivery (`Settings ➔ Shipping`)
-![Shipping Settings](./settings_shipping_preview.png)
 - **Free Shipping Threshold**: Cart amount that unlocks free shipping (e.g. `₹999`).
 - **Standard Shipping Fee**: Default delivery charge for orders below the threshold (e.g. `₹79`).
 - **Estimated Delivery Window**: Text shown on product pages (e.g. `3 - 5 business days`).
 
 ### 7. Themes & Color Accents (`Settings ➔ Themes`)
-![Theme Settings](./settings_themes_preview.png)
 - Switch between pre-configured aesthetic palettes (Warm Editorial, Minimalist Stone, Dark Luxury).
 - Changes take effect across buttons, badges, links, and accents across the entire site.

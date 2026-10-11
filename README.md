@@ -2,14 +2,65 @@
 
 A full-stack, modular e-commerce platform built with Next.js 14 (App Router), TypeScript, Tailwind CSS, Prisma ORM, and MySQL.
 
-![Storefront Preview](./homepage_preview.png)
+![Storefront Preview](./docs/images/mecommerce_storefront.png)
 
 ## Documentation
 
+- **[AI Setup & Customization Guide](./AI_SETUP_GUIDE.md)**: Architectural reference for AI coding assistants (Cursor, Claude, Copilot, ChatGPT) to customize and launch the store.
 - **[Non-Technical Deployment Guide](./NON_TECHNICAL_DEPLOYMENT_GUIDE.md)**: Plain-language guide for deploying the store without technical background.
 - **[Admin Portal User Guide](./ADMIN_PORTAL_USER_GUIDE.md)**: How to manage products, orders, coupons, customer reviews, and site settings.
 - **[Vercel Deployment Guide](./VERCEL_DEPLOYMENT.md)**: Production deployment instructions for Vercel with remote MySQL.
 - **[Hostinger & VPS Deployment Guide](./HOSTINGER_DEPLOYMENT.md)**: Deployment steps for Hostinger VPS (Dokploy/Docker) and shared hosting.
+
+---
+
+---
+
+## AI-Assisted Setup
+
+If you are using an AI coding assistant (Cursor, Windsurf, Claude Code, GitHub Copilot, ChatGPT, or Gemini), you can automate store customization and database configuration.
+
+Refer to **[AI_SETUP_GUIDE.md](./AI_SETUP_GUIDE.md)** for architectural rules and directory conventions.
+
+### Prompt Template
+
+Pass the following prompt to your AI assistant:
+
+```text
+I have cloned the M.E-Commerce repository and want to configure it for my store.
+Refer to `AI_SETUP_GUIDE.md` for architectural rules and directory layout.
+
+Store Details:
+- Store Name: [e.g. Lumina Studio]
+- Tagline: [e.g. Modern Stoneware & Tableware]
+- Categories: [e.g. Drinkware, Plates, Planters, Decor]
+- Sample Products: [List 3-5 items with prices and brief descriptions]
+- Currency: [e.g. INR or USD]
+- Support Contact: [WhatsApp number / Support email]
+- Payment Methods: [e.g. UPI QR + Cash on Delivery / Razorpay]
+- Admin Email: [e.g. admin@example.com]
+- Admin Passcode: [e.g. YourSecretPasscode2026]
+
+Tasks:
+1. Create `.env` from `.env.example` with these branding details.
+2. Update `prisma/seed.ts` with the categories, products, and studio settings.
+3. Run `npm install` and synchronize the schema using `npm run db:push`.
+4. Populate the database using `npm run db:seed`.
+5. Run `npm run build` to confirm zero TypeScript compilation errors.
+6. Provide instructions for starting the dev server and logging into `/admin/login`.
+```
+
+---
+
+## Visual Previews
+
+| Storefront & Hero Banner | Product Catalog & Filtering |
+|---|---|
+| ![Storefront](./docs/images/mecommerce_storefront.png) | ![Catalog](./docs/images/mecommerce_catalog.png) |
+
+| Product Details & Customizer | Admin Operations Dashboard |
+|---|---|
+| ![Product Details](./docs/images/mecommerce_product.png) | ![Admin Dashboard](./docs/images/mecommerce_admin_dashboard.png) |
 
 ---
 
@@ -154,6 +205,8 @@ Open:
 │   ├── schema.prisma       # Database models (User, Product, Order, Setting, Coupon)
 │   └── seed.ts             # Default data seeder
 ├── public/                 # Static assets & OpenGraph images
+├── docs/
+│   └── images/             # Documentation screenshots
 ├── src/
 │   ├── app/
 │   │   ├── (store)/        # Storefront pages (catalog, product, cart, checkout, account)
