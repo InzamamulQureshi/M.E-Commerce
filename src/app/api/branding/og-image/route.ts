@@ -3,6 +3,9 @@ import { Resvg } from "@resvg/resvg-js";
 import { db } from "@/lib/db";
 import { generateOgBillboardSvg, DEFAULT_OG_CONFIG, OgDesignConfig } from "@/lib/og-generator";
 
+import fs from "fs";
+import path from "path";
+
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
@@ -55,10 +58,25 @@ export async function GET(request: Request) {
   }
 
   try {
+    const fontFiles: string[] = [];
+    const fontDirs: string[] = [];
+    try {
+      const fontPath = path.join(process.cwd(), "src/lib/fonts/noto-sans-regular.ttf");
+      if (fs.existsSync(fontPath)) {
+        fontFiles.push(fontPath);
+      }
+      const fontsDir = path.join(process.cwd(), "src/lib/fonts");
+      if (fs.existsSync(fontsDir)) {
+        fontDirs.push(fontsDir);
+      }
+    } catch {}
+
     const resvg = new Resvg(svg, {
       fitTo: { mode: "width", value: 1200 },
       font: {
         loadSystemFonts: true,
+        fontFiles: fontFiles.length > 0 ? fontFiles : undefined,
+        fontDirs: fontDirs.length > 0 ? fontDirs : undefined,
         defaultFontFamily: "sans-serif",
       },
     });
