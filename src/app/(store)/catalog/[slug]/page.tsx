@@ -291,6 +291,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             }}
             enableWaxSeal={Boolean(studioSetting?.enableWaxSealCustomization !== false && product.allowsWaxSeal !== false)}
             enableGiftWrap={Boolean(studioSetting?.enableGiftWrapCustomization !== false && product.allowsGiftWrap !== false)}
+            enableCustomNote={Boolean(studioSetting?.enableCustomNoteCustomization !== false && product.allowsCustomNote !== false)}
           />
         </div>
       </div>

@@ -18,6 +18,7 @@ export interface ProductCustomizerProps {
   };
   enableWaxSeal?: boolean;
   enableGiftWrap?: boolean;
+  enableCustomNote?: boolean;
 }
 
 const WAX_SEAL_OPTIONS = [
@@ -37,6 +38,7 @@ export function ProductCustomizer({
   product,
   enableWaxSeal = true,
   enableGiftWrap = true,
+  enableCustomNote = true,
 }: ProductCustomizerProps) {
   const { addItem, openCart } = useCart();
   const [recipientName, setRecipientName] = useState("");
@@ -66,8 +68,8 @@ export function ProductCustomizer({
       price: unitPrice,
       image: mainImage,
       quantity,
-      customRecipientName: recipientName.trim() || undefined,
-      customMessage: personalMessage.trim() || undefined,
+      customRecipientName: enableCustomNote && product.allowsCustomNote ? recipientName.trim() || undefined : undefined,
+      customMessage: enableCustomNote && product.allowsCustomNote ? personalMessage.trim() || undefined : undefined,
       waxSealColor: enableWaxSeal && product.allowsWaxSeal ? selectedWax.name : undefined,
       giftWrapOption: enableGiftWrap ? selectedWrap.name : undefined,
       craftDays: product.craftDays,
@@ -80,7 +82,7 @@ export function ProductCustomizer({
   };
 
   const hasWaxSeal = Boolean(enableWaxSeal && product.allowsWaxSeal);
-  const hasCustomNote = Boolean(product.allowsCustomNote);
+  const hasCustomNote = Boolean(enableCustomNote && product.allowsCustomNote);
   const hasGiftWrap = Boolean(enableGiftWrap);
   const hasPersonalization = hasWaxSeal || hasCustomNote;
   const hasAnyCustomization = hasPersonalization || hasGiftWrap;
@@ -199,7 +201,7 @@ export function ProductCustomizer({
       )}
 
       {/* Custom Note */}
-      {product.allowsCustomNote && (
+      {hasCustomNote && (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-foreground">

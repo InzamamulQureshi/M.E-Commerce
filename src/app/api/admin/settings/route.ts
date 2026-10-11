@@ -112,6 +112,7 @@ export async function GET() {
         enableReviews: settingRecord.enableReviews ?? true,
         enableWaxSealCustomization: settingRecord.enableWaxSealCustomization ?? true,
         enableGiftWrapCustomization: settingRecord.enableGiftWrapCustomization ?? true,
+        enableCustomNoteCustomization: settingRecord.enableCustomNoteCustomization ?? true,
         adminEmail: admin.email,
         adminName: admin.name,
       },
@@ -208,6 +209,7 @@ export async function PUT(request: Request) {
         enableReviews,
         enableWaxSealCustomization,
         enableGiftWrapCustomization,
+        enableCustomNoteCustomization,
       } = body.studioSettings;
 
       const updateData: any = {};
@@ -358,6 +360,7 @@ export async function PUT(request: Request) {
       if (enableReviews !== undefined) updateData.enableReviews = Boolean(enableReviews);
       if (enableWaxSealCustomization !== undefined) updateData.enableWaxSealCustomization = Boolean(enableWaxSealCustomization);
       if (enableGiftWrapCustomization !== undefined) updateData.enableGiftWrapCustomization = Boolean(enableGiftWrapCustomization);
+      if (enableCustomNoteCustomization !== undefined) updateData.enableCustomNoteCustomization = Boolean(enableCustomNoteCustomization);
 
       const updated = await db.studioSetting.upsert({
         where: { id: "default" },

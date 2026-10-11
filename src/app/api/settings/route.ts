@@ -110,6 +110,7 @@ export async function GET() {
         enableReviews: setting?.enableReviews ?? true,
         enableWaxSealCustomization: setting?.enableWaxSealCustomization ?? true,
         enableGiftWrapCustomization: setting?.enableGiftWrapCustomization ?? true,
+        enableCustomNoteCustomization: setting?.enableCustomNoteCustomization ?? true,
       },
     };
 
@@ -169,13 +170,13 @@ export async function GET() {
         instagramDescription: "See craft demonstrations, dedications, and unboxings on our official social channel.",
         instagramButtonText: "@mecommerce",
         enableAnnouncement: true,
-        announcementText: "Complimentary signature wax-sealed keepsake card with all orders",
+        announcementText: "Complimentary express shipping on all qualifying orders",
         announcementLink: "/catalog",
         freeShippingThreshold: 999,
         standardShippingFee: 99,
         pdpShowHighlights: true,
         pdpHighlight1Title: "{craftDays} Days Handcraft",
-        pdpHighlight1Subtitle: "Folded individually in our studio",
+        pdpHighlight1Subtitle: "Handcrafted individually in our studio",
         pdpHighlight2Title: "Insured Dispatch",
         pdpHighlight2Subtitle: "Delivered safely with care",
         pdpHighlightsConfig: null,
@@ -185,6 +186,7 @@ export async function GET() {
         enableReviews: true,
         enableWaxSealCustomization: true,
         enableGiftWrapCustomization: true,
+        enableCustomNoteCustomization: true,
       },
     });
   }

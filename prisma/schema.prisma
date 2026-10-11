@@ -354,6 +354,7 @@ model StudioSetting {
   enableReviews             Boolean  @default(true)
   enableWaxSealCustomization Boolean @default(true)
   enableGiftWrapCustomization Boolean @default(true)
+  enableCustomNoteCustomization Boolean @default(true)
 
   updatedAt                 DateTime @updatedAt
 }

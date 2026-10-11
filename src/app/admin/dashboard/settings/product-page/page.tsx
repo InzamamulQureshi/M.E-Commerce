@@ -80,6 +80,7 @@ export default function ProductPageSettingsPage() {
   const [enableReviews, setEnableReviews] = useState(true);
   const [enableWaxSealCustomization, setEnableWaxSealCustomization] = useState(true);
   const [enableGiftWrapCustomization, setEnableGiftWrapCustomization] = useState(true);
+  const [enableCustomNoteCustomization, setEnableCustomNoteCustomization] = useState(true);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,6 +128,7 @@ export default function ProductPageSettingsPage() {
           setEnableReviews(s.enableReviews ?? true);
           setEnableWaxSealCustomization(s.enableWaxSealCustomization ?? true);
           setEnableGiftWrapCustomization(s.enableGiftWrapCustomization ?? true);
+          setEnableCustomNoteCustomization(s.enableCustomNoteCustomization ?? true);
         }
       })
       .catch(() => setError("Failed to load product page layout settings"))
@@ -185,6 +187,7 @@ export default function ProductPageSettingsPage() {
             enableReviews,
             enableWaxSealCustomization,
             enableGiftWrapCustomization,
+            enableCustomNoteCustomization,
           },
         }),
       });
@@ -255,7 +258,7 @@ export default function ProductPageSettingsPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white/60 dark:bg-[#1C1815] flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] block">
@@ -299,6 +302,30 @@ export default function ProductPageSettingsPage() {
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
                     enableGiftWrapCustomization ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl border border-[#D0C5B4] dark:border-[#38302A] bg-white/60 dark:bg-[#1C1815] flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-[#181513] dark:text-[#FAF8F5] block">
+                  Personalized Inscription & Custom Note
+                </span>
+                <p className="text-[11px] text-[#786F64] dark:text-[#A89F91] mt-0.5">
+                  Allows customers to add personalized recipient dedications & scribed messages.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEnableCustomNoteCustomization(!enableCustomNoteCustomization)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                  enableCustomNoteCustomization ? "bg-[#A64732] dark:bg-[#E07A5F]" : "bg-[#D0C5B4] dark:bg-[#38302A]"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    enableCustomNoteCustomization ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
